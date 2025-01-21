@@ -1,0 +1,92 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL") // Use environment variable to store the connection URL
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Person {
+  id          Int       @id @default(autoincrement()) // Int as PK
+  uuid        String    @unique @default(uuid()) // UUID as a unique field
+  firstName   String
+  lastName    String
+  email       String    @unique
+  phoneNumber String?   @unique
+  dateOfBirth DateTime?
+  address     String?
+  gender      String?
+  nationality String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        TrtUser?
+  Project     Project[]
+  Contact     Contact[]
+}
+
+model TrtUser {
+  id           Int      @id @default(autoincrement()) // Int as PK
+  uuid         String   @unique @default(uuid()) // UUID as a unique field
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  roleId       Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  person       Person   @relation(fields: [personUuid], references: [uuid])
+  personUuid   String   @unique //fk to person uuid
+  Role         Role?    @relation(fields: [roleUuid], references: [uuid])
+  roleUuid     String?
+}
+
+model Role {
+  id          Int          @id @default(autoincrement()) // Int as PK
+  uuid        String       @unique @default(uuid()) // UUID as a unique field
+  name        String       @unique
+  description String?
+  users       TrtUser[]
+  permissions Permission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Project {
+  id          Int       @id @default(autoincrement()) // Int as PK
+  uuid        String    @unique @default(uuid()) // UUID as a unique field
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  status      String
+  personId    Int
+  person      Person    @relation(fields: [personId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Contact {
+  id           Int      @id @default(autoincrement()) // Int as PK
+  uuid         String   @unique @default(uuid()) // UUID as a unique field
+  name         String
+  relationship String
+  email        String?
+  phoneNumber  String?
+  address      String?
+  personId     Int
+  person       Person   @relation(fields: [personId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Permission {
+  id          Int      @id @default(autoincrement()) // Int as PK
+  uuid        String   @unique @default(uuid()) // UUID as a unique field
+  name        String   @unique
+  description String?
+  roles       Role[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
