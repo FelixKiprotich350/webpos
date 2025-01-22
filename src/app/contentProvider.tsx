@@ -198,50 +198,51 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                 <Link href="/pos/tickets" passHref legacyBehavior>
                   <SideNavMenuItem>Pending Tickets</SideNavMenuItem>
                 </Link>
-                <SideNavMenuItem href="/pos/todaysales">
-                  Today's Sales
-                </SideNavMenuItem>
+                <Link href="/pos/today" passHref legacyBehavior>
+                  <SideNavMenuItem>Today's Sales</SideNavMenuItem>
+                </Link>
               </SideNavMenu>
               <SideNavMenu title="Inventory">
-                <SideNavMenuItem href="/inventory/allproducts">
-                  Products List
-                </SideNavMenuItem>
-                <SideNavMenuItem href="/inventory/prices">
-                  Products Prices
-                </SideNavMenuItem>
-                <SideNavMenuItem href="/inventory/balances">
-                  Products Balances
-                </SideNavMenuItem>
-                <SideNavMenuItem href="/inventory/categories">
-                  Categories
-                </SideNavMenuItem>
+                <Link href="/inventory/allproducts" passHref legacyBehavior>
+                  <SideNavMenuItem>Products List</SideNavMenuItem>
+                </Link>
+                <Link href="/inventory/prices" passHref legacyBehavior>
+                  <SideNavMenuItem>Products Prices</SideNavMenuItem>
+                </Link>
+                <Link href="/inventory/balances" passHref legacyBehavior>
+                  <SideNavMenuItem>Products Balances</SideNavMenuItem>
+                </Link>
+                <Link href="/inventory/categories" passHref legacyBehavior>
+                  <SideNavMenuItem>Categories</SideNavMenuItem>
+                </Link>
               </SideNavMenu>
               <SideNavMenu title="User Management">
-                <HeaderMenuItem>test</HeaderMenuItem>
-                <SideNavMenuItem href="/sources/dataentry">
-                  Users List
-                </SideNavMenuItem>
-                <SideNavMenuItem href="/sources/csv">
-                  Manage User
-                </SideNavMenuItem>
-                <SideNavMenuItem href="/sources/database">
-                  User Roles
-                </SideNavMenuItem>
-                <SideNavMenuItem href="/sources/api">
-                  User Permissions
-                </SideNavMenuItem>
+                <Link href="/users/all" passHref legacyBehavior>
+                  <SideNavMenuItem>Users List</SideNavMenuItem>
+                </Link>
+                <Link href="/users/manage" passHref legacyBehavior>
+                  <SideNavMenuItem>Manage User</SideNavMenuItem>
+                </Link>
+                <Link href="/users/roles" passHref legacyBehavior>
+                  <SideNavMenuItem>User Roles</SideNavMenuItem>
+                </Link>
+                <Link href="/users/permissions" passHref legacyBehavior>
+                  <SideNavMenuItem>User Permissions</SideNavMenuItem>
+                </Link>
               </SideNavMenu>
               <SideNavMenu title="Reports">
-                <SideNavMenuItem href="/reports">Sales Reports</SideNavMenuItem>
-                <SideNavMenuItem href="/reports/products">
-                  Product Reports
-                </SideNavMenuItem>
+                <Link href="/reports" legacyBehavior>
+                  <SideNavMenuItem>Sales Reports</SideNavMenuItem>
+                </Link>
+                <Link href="/reports/products" legacyBehavior>
+                  <SideNavMenuItem>Product Reports</SideNavMenuItem>
+                </Link>
+                <Link href="/reports/system" legacyBehavior>
+                  <SideNavMenuItem>System Reports</SideNavMenuItem>
+                </Link>
                 {/* <SideNavMenuItem href="/reports/users">
                   User Reports
                 </SideNavMenuItem> */}
-                <SideNavMenuItem href="/reports/system">
-                  System Reports
-                </SideNavMenuItem>
               </SideNavMenu>
               <SideNavMenu title="Settings">
                 <SideNavMenuItem href="/sources/dataentry"></SideNavMenuItem>

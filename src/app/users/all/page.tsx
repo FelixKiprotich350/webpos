@@ -26,7 +26,7 @@ interface User {
   status: string;
 }
 
-export const UserManagement: FC = () => {
+ const UserManagement: FC = () => {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -79,3 +79,6 @@ export const UserManagement: FC = () => {
     </div>
   );
 };
+
+
+export default UserManagement;
