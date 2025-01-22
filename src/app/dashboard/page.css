@@ -1,0 +1,17 @@
+.dashboard-row {
+    display: flex;
+    flex-wrap: wrap; /* Ensure elements wrap on smaller screens */
+    justify-content: space-between;
+  }
+  
+  .dashboard-tile {
+    flex: 1;
+    margin: 0.5rem; /* Add some space around the tiles */
+  }
+  
+  @media (max-width: 768px) {
+    .dashboard-tile {
+      flex: 1 1 100%; /* Take full width on smaller screens */
+    }
+  }
+  

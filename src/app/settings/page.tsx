@@ -1,3 +1,5 @@
+"use client";
+
 import DummyComponent from "app/dummyComponent";
 import Image from "next/image";
 

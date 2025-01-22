@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  ReactNode,
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-} from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import {
   Switcher,
   UserAvatar,
@@ -27,12 +21,10 @@ import {
   HeaderMenuButton,
   HeaderGlobalBar,
   HeaderGlobalAction,
-  HeaderMenuItem,
+  OverflowMenu,
   OverflowMenuItem,
 } from "@carbon/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { text } from "stream/consumers";
 
 interface ProvidersProps {
   children: ReactNode; // Defines that the `children` prop can accept any valid React node
@@ -48,18 +40,6 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
     setIsSideNavExpanded((prev) => !prev);
   };
 
-  const styles = {};
-  // StyledSideNavLink Component
-  function getLocalSideNavLink(label: any, path: any) {
-    return (
-      <SideNavLink
-        onClick={handleNavigation(path)}
-        style={{ cursor: "pointer" }}
-      >
-        {label}
-      </SideNavLink>
-    );
-  }
   // Fetch user details if the user is authenticated
   const fetchUserDetails = async () => {
     try {
@@ -112,9 +92,9 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Handle click for Carbon SideNav item (Manual Routing)
-  const handleNavigation = (path: string) => {
-    router.push(path); // This ensures that navigation happens via Next.js router
+  const handleLogout = () => {
+    // Add logout logic here
+    console.log("Logging out...");
   };
   return (
     <div>
@@ -188,16 +168,13 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
             aria-label="Side navigation"
           >
             <SideNavItems>
-              <Link href="/dashboard" passHref legacyBehavior>
-                <SideNavLink>Dashboard</SideNavLink>
-              </Link>
+             
+              <SideNavLink href="/dashboard">Dashboard</SideNavLink>
               <SideNavMenu title="Point of Sale">
-                <Link href="/pos/newsale" passHref legacyBehavior>
-                  <SideNavMenuItem>New Sale</SideNavMenuItem>
-                </Link>
-                <Link href="/pos/tickets" passHref legacyBehavior>
-                  <SideNavMenuItem>Pending Tickets</SideNavMenuItem>
-                </Link>
+                <SideNavMenuItem href="/pos/newsale">New Sale</SideNavMenuItem>
+                <SideNavMenuItem href="/pos/tickets">
+                  Pending Tickets
+                </SideNavMenuItem>
                 <SideNavMenuItem href="/pos/todaysales">
                   Today's Sales
                 </SideNavMenuItem>
@@ -217,7 +194,6 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                 </SideNavMenuItem>
               </SideNavMenu>
               <SideNavMenu title="User Management">
-                <HeaderMenuItem>test</HeaderMenuItem>
                 <SideNavMenuItem href="/sources/dataentry">
                   Users List
                 </SideNavMenuItem>
