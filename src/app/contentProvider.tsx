@@ -33,6 +33,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { text } from "stream/consumers";
+// import useAutoRefresh from "./hooks/useAutoRefresh";
 
 interface ProvidersProps {
   children: ReactNode; // Defines that the `children` prop can accept any valid React node
@@ -47,19 +48,8 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
   const toggleSideNav = () => {
     setIsSideNavExpanded((prev) => !prev);
   };
-
-  const styles = {};
-  // StyledSideNavLink Component
-  function getLocalSideNavLink(label: any, path: any) {
-    return (
-      <SideNavLink
-        onClick={handleNavigation(path)}
-        style={{ cursor: "pointer" }}
-      >
-        {label}
-      </SideNavLink>
-    );
-  }
+  // useAutoRefresh();  // Call the auto-refresh hook here
+ 
   // Fetch user details if the user is authenticated
   const fetchUserDetails = async () => {
     try {
@@ -209,8 +199,8 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                 <Link href="/inventory/prices" passHref legacyBehavior>
                   <SideNavMenuItem>Products Prices</SideNavMenuItem>
                 </Link>
-                <Link href="/inventory/balances" passHref legacyBehavior>
-                  <SideNavMenuItem>Products Balances</SideNavMenuItem>
+                <Link href="/inventory/levels" passHref legacyBehavior>
+                  <SideNavMenuItem>Stock Levels</SideNavMenuItem>
                 </Link>
                 <Link href="/inventory/categories" passHref legacyBehavior>
                   <SideNavMenuItem>Categories</SideNavMenuItem>
@@ -240,9 +230,9 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                 <Link href="/reports/system" legacyBehavior>
                   <SideNavMenuItem>System Reports</SideNavMenuItem>
                 </Link>
-                {/* <SideNavMenuItem href="/reports/users">
-                  User Reports
-                </SideNavMenuItem> */}
+                <Link href="/reports/users" legacyBehavior>
+                  <SideNavMenuItem>User Reports</SideNavMenuItem>
+                </Link>
               </SideNavMenu>
               <SideNavMenu title="Settings">
                 <SideNavMenuItem href="/sources/dataentry"></SideNavMenuItem>
