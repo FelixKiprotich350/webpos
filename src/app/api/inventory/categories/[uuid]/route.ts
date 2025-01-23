@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "lib/prisma"; // Ensure you have a shared Prisma client in `lib/prisma`
-import { Console } from "console";
 
-// GET: Fetch a single category by ID
+// // GET: Fetch a single category by ID
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { uuid: string } }
 ) {
-  const { id } = params;
-  console.log(id);
+  const { uuid } = params;
   try {
     const category = await prisma.category.findUnique({
       where: {
-        id: parseInt(id), // Convert ID to a number if it's an integer
+        uuid: uuid,
       },
       include: {
         Products: true, // Include related products

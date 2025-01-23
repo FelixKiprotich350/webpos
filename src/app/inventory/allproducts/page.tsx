@@ -1,9 +1,5 @@
 "use client";
 
-// This file will contain code for all the listed functionalities in your POS system
-// Structure: Each functionality is defined as a component or function, ready for integration
-
-// Imports for all components
 import React, { FC, useState, useEffect } from "react";
 import {
   Table,
@@ -12,7 +8,7 @@ import {
   TableHeader,
   TableBody,
   TableCell,
-  TableContainer, 
+  TableContainer,
 } from "@carbon/react";
 
 interface Product {
@@ -23,29 +19,38 @@ interface Product {
   stock: number;
 }
 
-// Inventory Items Component
- const InventoryItems: FC = () => {
+const InventoryItems: FC = () => {
   const [inventory, setInventory] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch inventory items (mocked here for simplicity)
-    setInventory([
-      {
-        id: "P001",
-        name: "Product 1",
-        category: "Category 1",
-        price: 100,
-        stock: 10,
-      },
-      {
-        id: "P002",
-        name: "Product 2",
-        category: "Category 2",
-        price: 150,
-        stock: 5,
-      },
-    ]);
+    const fetchInventory = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/inventory/products"); // Replace with your actual API endpoint
+        if (!response.ok) {
+          throw new Error("Failed to fetch inventory data.");
+        }
+        const data: Product[] = await response.json();
+        setInventory(data);
+      } catch (err: any) {
+        setError(err.message || "An error occurred while fetching inventory data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInventory();
   }, []);
+
+  if (loading) {
+    return <div>Loading inventory...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div>
@@ -77,6 +82,5 @@ interface Product {
     </div>
   );
 };
-
 
 export default InventoryItems;

@@ -12,6 +12,7 @@ import {
   Button,
   TextInput,
   Modal,
+  InlineLoading,
 } from "@carbon/react";
 
 interface Category {
@@ -26,14 +27,28 @@ export const ProductCategories: FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [newCategory, setNewCategory] = useState({ id: "", name: "", description: "" });
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Fetch categories from the backend
   useEffect(() => {
-    // Mock data for categories
-    setCategories([
-      { id: "C001", name: "Electronics", description: "Devices and gadgets." },
-      { id: "C002", name: "Groceries", description: "Daily essentials." },
-      { id: "C003", name: "Clothing", description: "Apparel and fashion." },
-    ]);
+    const fetchCategories = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/inventory/categories");
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data);
+        } else {
+          console.error("Failed to fetch categories");
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,11 +60,28 @@ export const ProductCategories: FC = () => {
     category.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (newCategory.name && newCategory.description) {
-      setCategories([...categories, { ...newCategory, id: `C${categories.length + 1}` }]);
-      setNewCategory({ id: "", name: "", description: "" });
-      setIsModalOpen(false);
+      try {
+        const response = await fetch("/api/inventory/categories", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newCategory),
+        });
+
+        if (response.ok) {
+          const createdCategory = await response.json();
+          setCategories([...categories, createdCategory]);
+          setNewCategory({ id: "", name: "", description: "" });
+          setIsModalOpen(false);
+        } else {
+          console.error("Failed to add category");
+        }
+      } catch (error) {
+        console.error("Error adding category:", error);
+      }
     }
   };
 
@@ -59,17 +91,50 @@ export const ProductCategories: FC = () => {
     setNewCategory(category);
   };
 
-  const handleSaveCategory = () => {
-    setCategories(
-      categories.map((cat) => (cat.id === editingCategory?.id ? newCategory : cat))
-    );
-    setEditingCategory(null);
-    setNewCategory({ id: "", name: "", description: "" });
-    setIsModalOpen(false);
+  const handleSaveCategory = async () => {
+    if (editingCategory) {
+      try {
+        const response = await fetch(`/api/inventory/categories/${editingCategory.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newCategory),
+        });
+
+        if (response.ok) {
+          const updatedCategory = await response.json();
+          setCategories(
+            categories.map((cat) =>
+              cat.id === updatedCategory.id ? updatedCategory : cat
+            )
+          );
+          setEditingCategory(null);
+          setNewCategory({ id: "", name: "", description: "" });
+          setIsModalOpen(false);
+        } else {
+          console.error("Failed to save category");
+        }
+      } catch (error) {
+        console.error("Error saving category:", error);
+      }
+    }
   };
 
-  const handleDeleteCategory = (id: string) => {
-    setCategories(categories.filter((category) => category.id !== id));
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      const response = await fetch(`/api/inventory/categories/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setCategories(categories.filter((category) => category.id !== id));
+      } else {
+        console.error("Failed to delete category");
+      }
+    } catch (error) {
+      console.error("Error deleting category:", error);
+    }
   };
 
   return (
@@ -87,44 +152,48 @@ export const ProductCategories: FC = () => {
         Add Category
       </Button>
 
-      <TableContainer title="Product Categories">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableHeader>ID</TableHeader>
-              <TableHeader>Name</TableHeader>
-              <TableHeader>Description</TableHeader>
-              <TableHeader>Actions</TableHeader>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredCategories.map((category) => (
-              <TableRow key={category.id}>
-                <TableCell>{category.id}</TableCell>
-                <TableCell>{category.name}</TableCell>
-                <TableCell>{category.description}</TableCell>
-                <TableCell>
-                  <Button
-                    size="sm"
-                    kind="secondary"
-                    onClick={() => handleEditCategory(category)}
-                    style={{ marginRight: "0.5rem" }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    kind="danger"
-                    onClick={() => handleDeleteCategory(category.id)}
-                  >
-                    Delete
-                  </Button>
-                </TableCell>
+      {isLoading ? (
+        <InlineLoading description="Loading categories..." />
+      ) : (
+        <TableContainer title="Product Categories">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>ID</TableHeader>
+                <TableHeader>Name</TableHeader>
+                <TableHeader>Description</TableHeader>
+                <TableHeader>Actions</TableHeader>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {filteredCategories.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell>{category.id}</TableCell>
+                  <TableCell>{category.name}</TableCell>
+                  <TableCell>{category.description}</TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      kind="secondary"
+                      onClick={() => handleEditCategory(category)}
+                      style={{ marginRight: "0.5rem" }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      kind="danger"
+                      onClick={() => handleDeleteCategory(category.id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       {isModalOpen && (
         <Modal
@@ -139,14 +208,14 @@ export const ProductCategories: FC = () => {
             id="category-name"
             labelText="Category Name"
             value={newCategory.name}
-            onChange={(e:any) => setNewCategory({ ...newCategory, name: e.target.value })}
+            onChange={(e: any) => setNewCategory({ ...newCategory, name: e.target.value })}
             style={{ marginBottom: "1rem" }}
           />
           <TextInput
             id="category-description"
             labelText="Category Description"
             value={newCategory.description}
-            onChange={(e:any) => setNewCategory({ ...newCategory, description: e.target.value })}
+            onChange={(e: any) => setNewCategory({ ...newCategory, description: e.target.value })}
           />
         </Modal>
       )}
