@@ -113,7 +113,19 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  Sale Sale[]
+  Sale         Sale[]
+  categoryUuid String // Foreign key for the category
+  Category     Category @relation(fields: [categoryUuid], references: [uuid]) // Enforce relationship
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  uuid        String    @unique @default(uuid()) // UUID as a unique field
+  name        String
+  description String?
+  Products    Product[] // One-to-many relationship with Product
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model PackagingUnit {
