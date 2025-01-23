@@ -13,6 +13,7 @@ export async function GET(request: Request) {
   if (!decoded) {
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
+  
 
   return NextResponse.json(decoded);
 }

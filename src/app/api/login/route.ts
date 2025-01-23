@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     // Generate a JWT token
     const token = generateToken({ id: user.id, email: user.email });
-    let userDetails = { name: user.personId, email: user.email };
+    let userDetails = { name: user.personUuid, email: user.email };
 
     // Send the token in a secure HTTP-only cookie
     const response = NextResponse.json({
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 10 * 60, // 10 minutes
+      maxAge: 100 * 60, // 100 minutes
     });
 
     return response;
