@@ -102,10 +102,7 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Handle click for Carbon SideNav item (Manual Routing)
-  const handleNavigation = (path: string) => {
-    router.push(path); // This ensures that navigation happens via Next.js router
-  };
+   
   return (
     <div>
       <Theme theme="g100">

@@ -24,7 +24,6 @@ model Person {
   updatedAt   DateTime  @updatedAt
   user        TrtUser?
   Project     Project[]
-  Contact     Contact[]
 }
 
 model TrtUser {
@@ -67,20 +66,6 @@ model Project {
   updatedAt   DateTime  @updatedAt
 }
 
-model Contact {
-  id           Int      @id @default(autoincrement()) // Int as PK
-  uuid         String   @unique @default(uuid()) // UUID as a unique field
-  name         String
-  relationship String
-  email        String?
-  phoneNumber  String?
-  address      String?
-  personId     Int
-  person       Person   @relation(fields: [personId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
 model Permission {
   id          Int      @id @default(autoincrement()) // Int as PK
   uuid        String   @unique @default(uuid()) // UUID as a unique field
@@ -89,4 +74,90 @@ model Permission {
   roles       Role[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+//inventory models
+
+model Supplier {
+  id         Int      @id @default(autoincrement())
+  uuid       String   @unique @default(uuid()) // UUID as a unique field
+  supplies   Supply[]
+  personUuid String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Supply {
+  id                  Int              @id @default(autoincrement())
+  uuid                String           @unique @default(uuid()) // UUID as a unique field
+  productUuid         String
+  product             Product          @relation(fields: [productUuid], references: [uuid])
+  supplierUuid        String
+  supplier            Supplier         @relation(fields: [supplierUuid], references: [uuid])
+  quantity            Decimal
+  receivedAt          DateTime         @default(now())
+  userUuid            String
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  ProductPackUnit     ProductPackUnit? @relation(fields: [productPackUnitUuid], references: [uuid])
+  productPackUnitUuid String?
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  uuid        String   @unique @default(uuid()) // UUID as a unique field
+  name        String
+  description String?
+  basicUnit   String
+  supplies    Supply[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  Sale Sale[]
+}
+
+model PackagingUnit {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid()) // UUID as a unique field
+  name      String
+  countable Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductPackUnit {
+  id           Int      @id @default(autoincrement())
+  uuid         String   @unique @default(uuid()) // UUID as a unique field
+  productUuid  String
+  unitFactor   Decimal
+  packUnitUuid String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  Supplies     Supply[]
+}
+
+///sales modesls
+model Sale {
+  id                  Int      @id @default(autoincrement())
+  uuid                String   @unique @default(uuid()) // UUID as a unique field
+  productUuid         String
+  product             Product  @relation(fields: [productUuid], references: [uuid])
+  quantity            Decimal
+  price               Decimal
+  userUuid            String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  productPackUnitUuid String?
+}
+
+model basketSale {
+  id                  Int      @id @default(autoincrement())
+  uuid                String   @unique @default(uuid()) // UUID as a unique field
+  productUuid         String
+  quantity            Decimal
+  price               Float
+  userUuid            String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  productPackUnitUuid String?
 }
