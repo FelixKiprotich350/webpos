@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Define the public routes (accessible without authentication)
 const PUBLIC_ROUTES = [
   "/api/signup",
   "/api/login",
@@ -12,39 +11,35 @@ const PUBLIC_ROUTES = [
   "/contacts",
 ];
 
-// Exclude static asset paths from authentication check
 const STATIC_ASSETS = ["/_next", "/favicon.ico"];
 
 export function middleware(request: NextRequest) {
   const requestPath = request.nextUrl.pathname;
 
-  // Ignore static asset requests
+  // Allow static assets
   if (STATIC_ASSETS.some((route) => requestPath.startsWith(route))) {
-    return NextResponse.next(); // Allow static assets
+    return NextResponse.next();
   }
 
-  // Get the auth token from cookies
-  const token = request.cookies.get("authToken")?.value; // Use ?.value for Next.js cookie objects
+  // Extract token from cookies
+  const token = request.cookies.get("authToken")?.value;
 
-  // Check if the current path is a public route
+  // Check if the route is public
   const isPublicRoute =
-    requestPath === "/" || // Allow exact match for root "/"
-    PUBLIC_ROUTES.some((route) => requestPath.startsWith(route)); //allow if public route
+    requestPath === "/" ||
+    PUBLIC_ROUTES.some((route) => requestPath.startsWith(route));
 
-  // Allow access to public routes or if the user has a valid token
+  // Allow access to public routes or authenticated users
   if (isPublicRoute || token) {
-    return NextResponse.next(); // Allow access
+    return NextResponse.next();
   }
 
-  // If the route is protected and the user is not authenticated, redirect to login
+  // Redirect unauthenticated users
   const redirectUrl = new URL("/signing", request.url);
-  redirectUrl.searchParams.set("redirect", request.nextUrl.pathname); // Store the current path
+  redirectUrl.searchParams.set("redirect", requestPath);
   return NextResponse.redirect(redirectUrl);
 }
 
-// Middleware configuration
 export const config = {
-  matcher: [
-    "/:path*", // Match all routes
-  ],
+  matcher: ["/api/:path*", "/:path*"], // Ensure middleware matches API and other routes
 };

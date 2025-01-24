@@ -104,18 +104,20 @@ model Supply {
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  uuid        String   @unique @default(uuid()) // UUID as a unique field
-  name        String
-  description String?
-  basicUnit   String
-  supplies    Supply[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  uuid          String   @unique @default(uuid()) // UUID as a unique field
+  name          String
+  description   String?
+  basicUnitUuid String
+  sellingPrice  Float   @default(1)
+  supplies      Supply[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  Sale         Sale[]
-  categoryUuid String // Foreign key for the category
-  Category     Category @relation(fields: [categoryUuid], references: [uuid]) // Enforce relationship
+  Sale          Sale[]
+  categoryUuid  String // Foreign key for the category
+  Category      Category      @relation(fields: [categoryUuid], references: [uuid]) // Enforce relationship
+  PackagingUnit PackagingUnit @relation(fields: [basicUnitUuid], references: [uuid])
 }
 
 model Category {
@@ -129,12 +131,13 @@ model Category {
 }
 
 model PackagingUnit {
-  id        Int      @id @default(autoincrement())
-  uuid      String   @unique @default(uuid()) // UUID as a unique field
+  id        Int       @id @default(autoincrement())
+  uuid      String    @unique @default(uuid()) // UUID as a unique field
   name      String
   countable Boolean
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  Products  Product[] // One-to-many relationship with Product
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model ProductPackUnit {

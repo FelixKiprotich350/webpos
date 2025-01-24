@@ -10,9 +10,14 @@ export async function GET() {
     const product = await prisma.product.findMany({
       include: {
         Category: true, // Include related category
+        PackagingUnit: true, // Include related packaging unit
       },
     });
-    return NextResponse.json(product);
+    // return NextResponse.json(product);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -26,7 +31,7 @@ export async function PUT(req: Request) {
   try {
     // Parse request body
     const body = await req.json();
-    const { uuid, name, description, basicUnit, categoryUuid } = body;
+    const { uuid, name, description, basicUnitUuid, categoryUuid } = body;
 
     // Validate required fields
     if (!uuid || !name || !categoryUuid) {
@@ -42,7 +47,7 @@ export async function PUT(req: Request) {
       data: {
         name,
         description,
-        basicUnit,
+        basicUnitUuid,
         categoryUuid,
       },
     });
@@ -56,7 +61,6 @@ export async function PUT(req: Request) {
     );
   }
 }
-
 
 export async function DELETE() {
   try {
@@ -75,7 +79,8 @@ export async function POST(req: Request) {
   try {
     // Parse the request body
     const body = await req.json();
-    const { name, description, basicUnit, categoryUuid } = body;
+    const { name, description, basicUnitUuid, categoryUuid, sellingPrice } =
+      body;
 
     // Validate required fields
     if (!name || !categoryUuid) {
@@ -90,8 +95,17 @@ export async function POST(req: Request) {
       data: {
         name,
         description: description || null, // Optional field
-        basicUnit: basicUnit || null,     // Optional field
-        categoryUuid,
+        sellingPrice: Number(sellingPrice) || 1,
+        Category: {
+          connect: {
+            uuid: categoryUuid, // Match your `categoryUuid` field with the unique identifier
+          },
+        },
+        PackagingUnit: {
+          connect: {
+            uuid: basicUnitUuid, // Match your `basicUnitUuid` field with the unique identifier
+          },
+        },
       },
     });
 

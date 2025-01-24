@@ -14,10 +14,9 @@ import {
   TextInput,
   Select,
   SelectItem,
-  InlineNotification,
+  ToastNotification,
 } from "@carbon/react";
 import { Category, Product, PackagingUnit } from "@prisma/client";
-import { useNotification } from "app/layoutComponents/notificationProvider";
 
 interface ProductModel extends Product {
   Category?: Category;
@@ -25,8 +24,6 @@ interface ProductModel extends Product {
 }
 
 const InventoryItems: FC = () => {
-  const { addNotification } = useNotification();
-
   const [inventory, setInventory] = useState<ProductModel[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [basicUnits, setBasicUnits] = useState<PackagingUnit[]>([]);
@@ -53,9 +50,9 @@ const InventoryItems: FC = () => {
         const data: ProductModel[] = await response.json();
         setInventory(data);
       } catch (err: any) {
-        const errorMessage =
-          err.message || "An error occurred while fetching inventory data.";
-        setError(errorMessage);
+        setError(
+          err.message || "An error occurred while fetching inventory data."
+        );
       } finally {
         setLoading(false);
       }
@@ -70,9 +67,7 @@ const InventoryItems: FC = () => {
         const data: Category[] = await response.json();
         setCategories(data);
       } catch (err: any) {
-        const errorMessage =
-          err.message || "An error occurred while fetching categories.";
-        setError(errorMessage);
+        setError(err.message || "An error occurred while fetching categories.");
       }
     };
 
@@ -85,9 +80,9 @@ const InventoryItems: FC = () => {
         const data: PackagingUnit[] = await response.json();
         setBasicUnits(data);
       } catch (err: any) {
-        const errorMessage =
-          err.message || "An error occurred while fetching basic units.";
-        setError(errorMessage);
+        setError(
+          err.message || "An error occurred while fetching basic units."
+        );
       }
     };
 
@@ -118,13 +113,7 @@ const InventoryItems: FC = () => {
         description: null,
       }
     );
-    addNotification({
-      kind: "success",
-      title: "Operation Successful",
-      subtitle: "Your action was completed successfully.",
-      timeout: 5000, // 5 seconds
-    });
-    setShowModal(false);
+    setShowModal(true);
   };
 
   // Close modal
@@ -170,6 +159,11 @@ const InventoryItems: FC = () => {
 
       closeModal();
     } catch (err: any) {
+      ToastNotification({
+        kind: "error",
+        title: "Error",
+        subtitle: err.message || "An error occurred while saving the product.",
+      });
       setError(err.message || "An error occurred while saving the product.");
     }
   };
@@ -195,24 +189,20 @@ const InventoryItems: FC = () => {
     return <div>Loading inventory...</div>;
   }
 
+  if (error) {
+    ToastNotification({
+      kind: "error",
+      title: "Error Fetching data",
+      subtitle: error || "An error occurred while saving the product.",
+    });
+  }
+
   return (
     <div>
-      {error && (
-        <InlineNotification
-          aria-label="closes notification"
-          kind="error"
-          onClose={() => {}}
-          onCloseButtonClick={() => {}}
-          statusIconDescription="notification"
-          subtitle="Subtitle text goes here"
-          title="Notification title"
-        />
-      )}
       <h3>Inventory Items</h3>
       <Button onClick={() => openModal()} kind="primary">
         Add New Product
       </Button>
-
       <TableContainer title="Inventory List">
         <Table>
           <TableHead>

@@ -31,7 +31,10 @@ export async function POST(request: Request) {
     const { email, password } = await request.json();
 
     // Find the user by email
-    const user = await prisma.trtUser.findUnique({ where: { email } });
+    const user = await prisma.trtUser.findUnique({
+      where: { email },
+      include: { person: true },
+    });
     if (!user) {
       return NextResponse.json(
         { error: "Invalid email or password" },
@@ -40,7 +43,10 @@ export async function POST(request: Request) {
     }
 
     // Verify the password
-    const isPasswordValid = await verifyPassword(password, user.passwordHash ?? "");
+    const isPasswordValid = await verifyPassword(
+      password,
+      user.passwordHash ?? ""
+    );
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: "Invalid email or password" },
@@ -49,8 +55,8 @@ export async function POST(request: Request) {
     }
 
     // Generate a JWT token
-    const token = generateToken({ id: user.id, email: user.email });
-    let userDetails = { name: user.personUuid, email: user.email };
+    const token = generateToken({ id: user.uuid, email: user.email });
+    let userDetails = { name: user.person?.firstName, email: user.email };
 
     // Send the token in a secure HTTP-only cookie
     const response = NextResponse.json({
@@ -61,7 +67,7 @@ export async function POST(request: Request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 100 * 60, // 100 minutes
+      maxAge: 100 * 60, // give in seconds
     });
 
     return response;

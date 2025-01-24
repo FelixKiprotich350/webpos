@@ -36,7 +36,6 @@ const LeftPanelMenu: React.FC<LeftPanelMenuProps> = ({  }) => {
       const response = await fetch("/api/token"); // API endpoint to get user details
       if (response.ok) {
         const data = await response.json();
-        console.log(data);
         setUser(data); // Store user details in state
       } else {
         setUser(null); // Reset user state if not authenticated
