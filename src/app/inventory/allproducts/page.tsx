@@ -31,7 +31,6 @@ const InventoryItems: FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [basicUnits, setBasicUnits] = useState<PackagingUnit[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [editProduct, setEditProduct] = useState<ProductModel | null>(null);
   const [formData, setFormData] = useState<Partial<ProductModel>>({
@@ -53,9 +52,12 @@ const InventoryItems: FC = () => {
         const data: ProductModel[] = await response.json();
         setInventory(data);
       } catch (err: any) {
-        const errorMessage =
-          err.message || "An error occurred while fetching inventory data.";
-        setError(errorMessage);
+        addNotification({
+          kind: "error",
+          title: "Operation Failed",
+          subtitle: "An error occurred while fetching inventory data.",
+          timeout: 8000, // 5 seconds
+        });
       } finally {
         setLoading(false);
       }
@@ -70,9 +72,12 @@ const InventoryItems: FC = () => {
         const data: Category[] = await response.json();
         setCategories(data);
       } catch (err: any) {
-        const errorMessage =
-          err.message || "An error occurred while fetching categories.";
-        setError(errorMessage);
+        addNotification({
+          kind: "error",
+          title: "Operation Failed",
+          subtitle: "An error occurred while fetching categories.",
+          timeout: 8000, // 5 seconds
+        });
       }
     };
 
@@ -85,9 +90,12 @@ const InventoryItems: FC = () => {
         const data: PackagingUnit[] = await response.json();
         setBasicUnits(data);
       } catch (err: any) {
-        const errorMessage =
-          err.message || "An error occurred while fetching basic units.";
-        setError(errorMessage);
+        addNotification({
+          kind: "error",
+          title: "Operation Failed",
+          subtitle: "An error occurred while fetching basic units",
+          timeout: 8000, // 5 seconds
+        });
       }
     };
 
@@ -118,13 +126,8 @@ const InventoryItems: FC = () => {
         description: null,
       }
     );
-    addNotification({
-      kind: "success",
-      title: "Operation Successful",
-      subtitle: "Your action was completed successfully.",
-      timeout: 5000, // 5 seconds
-    });
-    setShowModal(false);
+
+    setShowModal(true);
   };
 
   // Close modal
@@ -146,7 +149,6 @@ const InventoryItems: FC = () => {
       const url = editProduct
         ? `/api/inventory/products`
         : "/api/inventory/products";
-
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -154,7 +156,15 @@ const InventoryItems: FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save product.");
+        addNotification({
+          kind: "error",
+          title: "Operation Failed",
+          subtitle: "An error occurred while saving the product.",
+          timeout: 8000, // 8 seconds
+        });
+        closeModal();
+
+        return;
       }
 
       const savedProduct: ProductModel = await response.json();
@@ -169,8 +179,19 @@ const InventoryItems: FC = () => {
       });
 
       closeModal();
+      addNotification({
+        kind: "success",
+        title: "Operation Completed",
+        subtitle: "Product saved successfully.",
+        timeout: 8000, // 8 seconds
+      });
     } catch (err: any) {
-      setError(err.message || "An error occurred while saving the product.");
+      addNotification({
+        kind: "error",
+        title: "Operation Failed",
+        subtitle: "An error occurred while saving the product.",
+        timeout: 8000, // 5 seconds
+      });
     }
   };
 
@@ -187,27 +208,17 @@ const InventoryItems: FC = () => {
 
       setInventory((prev) => prev.filter((item) => item.uuid !== id));
     } catch (err: any) {
-      setError(err.message || "An error occurred while deleting the product.");
+      addNotification({
+        kind: "error",
+        title: "Operation Failed",
+        subtitle: "An error occurred while deleting the product.",
+        timeout: 8000, // 5 seconds
+      });
     }
   };
 
-  if (loading) {
-    return <div>Loading inventory...</div>;
-  }
-
   return (
     <div>
-      {error && (
-        <InlineNotification
-          aria-label="closes notification"
-          kind="error"
-          onClose={() => {}}
-          onCloseButtonClick={() => {}}
-          statusIconDescription="notification"
-          subtitle="Subtitle text goes here"
-          title="Notification title"
-        />
-      )}
       <h3>Inventory Items</h3>
       <Button onClick={() => openModal()} kind="primary">
         Add New Product

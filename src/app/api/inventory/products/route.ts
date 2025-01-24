@@ -13,11 +13,7 @@ export async function GET() {
         PackagingUnit: true, // Include related packaging unit
       },
     });
-    // return NextResponse.json(product);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json(product);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -31,8 +27,8 @@ export async function PUT(req: Request) {
   try {
     // Parse request body
     const body = await req.json();
-    const { uuid, name, description, basicUnitUuid, categoryUuid } = body;
-
+    const { uuid, name, description, basicUnitUuid, categoryUuid,sellingPrice } = body;
+ 
     // Validate required fields
     if (!uuid || !name || !categoryUuid) {
       return NextResponse.json(
@@ -49,6 +45,11 @@ export async function PUT(req: Request) {
         description,
         basicUnitUuid,
         categoryUuid,
+        sellingPrice: parseFloat(sellingPrice),
+      },
+      include: {
+        Category: true, // Include related category
+        PackagingUnit: true, // Include related unit
       },
     });
 

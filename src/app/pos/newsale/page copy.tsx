@@ -1,16 +1,13 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
-import { Button, TextInput, Table, TableHead, TableRow, TableHeader, TableBody, TableCell, TableContainer, Dropdown, DropdownItem } from "@carbon/react";
+import { FC, useState } from "react";
+import { Button, TextInput, Table, TableHead, TableRow, TableHeader, TableBody, TableCell, TableContainer } from "@carbon/react";
 
-interface Product {
+interface Item {
   id: string;
   name: string;
   price: number;
   unit: string;
-}
-
-interface Item extends Product {
   quantity: number;
   tax: number;
   total: number;
@@ -20,66 +17,12 @@ interface NewSalePageProps {}
 
 const NewSalePage: FC<NewSalePageProps> = (props) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
-
-  // Fetch products from API
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("/api/inventory/products"); // Replace with your actual API endpoint
-        const data = await response.json();
-        setProducts(data);
-        setFilteredProducts(data);
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  // Update filtered products based on search term
-  useEffect(() => {
-    const lowercasedTerm = searchTerm.toLowerCase();
-    setFilteredProducts(
-      products.filter((product) =>
-        product.name.toLowerCase().includes(lowercasedTerm)
-      )
-    );
-  }, [searchTerm, products]);
+  const [items, setItems] = useState<Item[]>([
+   
+  ]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-  };
-
-  const handleAddItem = (product: Product) => {
-    const existingItem = items.find((item) => item.id === product.id);
-
-    if (existingItem) {
-      setItems((prevItems) =>
-        prevItems.map((item) =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-                total: (item.quantity + 1) * item.price + item.tax,
-              }
-            : item
-        )
-      );
-    } else {
-      setItems((prevItems) => [
-        ...prevItems,
-        {
-          ...product,
-          quantity: 1,
-          tax: product.price * 0.1, // Assuming 10% tax
-          total: product.price * 1.1,
-        },
-      ]);
-    }
   };
 
   const calculateSummary = () => {
@@ -101,7 +44,7 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
     >
       {/* Main content area */}
       <div style={{ flex: 3, display: "flex", flexDirection: "column" }}>
-        {/* Search and filter */}
+        {/* Search bar */}
         <div
           style={{
             padding: "1rem",
@@ -116,18 +59,6 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             onChange={handleSearchChange}
             style={{ width: "100%" }}
           />
-          <div style={{ marginTop: "1rem" }}>
-            {filteredProducts.map((product) => (
-              <Button
-                key={product.id}
-                onClick={() => handleAddItem(product)}
-                kind="secondary"
-                style={{ margin: "0.5rem" }}
-              >
-                {product.name} - ${product.price.toFixed(2)}
-              </Button>
-            ))}
-          </div>
         </div>
 
         {/* Table */}
