@@ -40,7 +40,9 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [items, setItems] = useState<SellingItem[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [formData, setFormData] = useState<Partial<SellingItem>>();
+  const [payments, setTicketPayments] = useState<any>();
 
   // Fetch products from API
   useEffect(() => {
@@ -125,6 +127,15 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
     const totalTax = items.reduce((acc, item) => acc + item.tax, 0);
     const grandTotal = subtotal + totalTax;
     return { subtotal, totalTax, grandTotal };
+  };
+
+  const handleCompleteCheckout = () => {
+    setShowCheckoutModal(true);
+    try {
+    } catch (error) {
+    } finally {
+      // setShowCheckoutModal(false);
+    }
   };
 
   const { subtotal, totalTax, grandTotal } = calculateSummary();
@@ -278,6 +289,42 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             </div>
           </Modal>
         )}
+        {showCheckoutModal && (
+          <Modal
+            open={showCheckoutModal}
+            modalHeading={"Checking Out Sales"}
+            primaryButtonText={"Complete Sales"}
+            secondaryButtonText="Cancel"
+            onRequestClose={() => setShowCheckoutModal(false)}
+            onRequestSubmit={() => {
+              // Update item in the list with the new quantity
+              const updatedItems = items.map((item) =>
+                item.uuid === formData?.uuid
+                  ? {
+                      ...item,
+                      quantity: formData?.quantity ?? 1,
+                      total: formData?.quantity ?? 1 * item.sellingPrice,
+                    }
+                  : item
+              );
+              setItems(updatedItems); // Update the state with the modified array
+              setShowCheckoutModal(false);
+            }}
+          >
+            <div>
+              <Tile>
+                <p style={{ fontSize: "1.5rem" }}>
+                  <strong>Total Charged:</strong> Ksh {grandTotal.toFixed(2)}
+                </p>
+              </Tile>
+              <Tile>
+                <p style={{ fontSize: "1.5rem" }}>
+                  <strong>Total Charged:</strong> Ksh {grandTotal.toFixed(2)}
+                </p>
+              </Tile>
+            </div>
+          </Modal>
+        )}
       </div>
 
       {/* Right panel */}
@@ -301,24 +348,46 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             <h3 style={{ textAlign: "left" }}>
               <u>Summary</u>
             </h3>
-          </Tile>
-          <Tile>
             <p style={{ fontSize: "1.5rem" }}>
               <strong>Subtotal:</strong>
             </p>
             <p style={{ fontSize: "1.5rem" }}> Ksh {subtotal.toFixed(2)}</p>
-          </Tile>
-          <Tile className="tileContent">
             <p style={{ fontSize: "1.5rem" }}>
               <strong>Total Tax:</strong>
             </p>
             <p style={{ fontSize: "1.5rem" }}>Ksh {totalTax.toFixed(2)}</p>
-          </Tile>
-          <Tile className="tileContent">
             <p style={{ fontSize: "1.5rem" }}>
               <strong>Grand Total:</strong>
             </p>
             <p style={{ fontSize: "1.5rem" }}>Ksh {grandTotal.toFixed(2)}</p>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableHeader>Mode</TableHeader>
+                  <TableHeader>Amount</TableHeader>
+                  <TableHeader></TableHeader>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.name}</TableCell>
+                    <TableCell>{item.sellingPrice?.toFixed(2)}</TableCell>
+                    <TableCell>{item.basicUnitUuid}</TableCell>
+                    <TableCell>{item.quantity}</TableCell>
+                    <TableCell>{item.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <IconButton
+                        kind="ghost"
+                        size="small"
+                        onClick={() => handleEditItem(item)}
+                        renderIcon={Edit}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </Tile>
         </div>
 
@@ -358,9 +427,9 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
           <Button
             kind="primary"
             style={{ flex: 1, minWidth: "22%" }}
-            onClick={() => console.log("Completing...")}
+            onClick={() => handleCompleteCheckout()}
           >
-            Complete
+            Complete & cHECKOUT
           </Button>
         </div>
       </div>
