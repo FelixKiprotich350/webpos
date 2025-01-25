@@ -32,6 +32,9 @@ export async function GET(
       { status: 500 }
     );
   }
+  finally{
+      prisma.$disconnect();
+    }
 }
 
 // PUT: Update a category by ID
@@ -63,6 +66,9 @@ export async function PUT(
       { status: 500 }
     );
   }
+  finally{
+      prisma.$disconnect();
+    }
 }
 
 // DELETE: Delete a category by ID
@@ -87,4 +93,7 @@ export async function DELETE(
       { status: 500 }
     );
   }
+  finally{
+      prisma.$disconnect();
+    }
 }

@@ -15,6 +15,9 @@ export async function GET() {
     console.error("Error:", error);
     return NextResponse.json({ error: "Internal server error" });
   }
+  finally{
+      prisma.$disconnect();
+    }
 }
 
  
@@ -29,6 +32,7 @@ export async function POST(req: NextApiRequest) {
       );
     }
 
+
     const newUnit = await prisma.packagingUnit.create({
       data: {
         name,
@@ -41,6 +45,9 @@ export async function POST(req: NextApiRequest) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+  finally{
+      prisma.$disconnect();
+    }
 }
 
 // PUT: Update a packaging unit
@@ -64,6 +71,9 @@ export async function PUT(req: NextApiRequest) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Internal server error" });
   }
+  finally{
+      prisma.$disconnect();
+    }
 }
 
 // DELETE: Delete a packaging unit
@@ -84,4 +94,7 @@ export async function DELETE(req: NextApiRequest) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Internal server error" });
   }
+  finally{
+      prisma.$disconnect();
+    }
 }

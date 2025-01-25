@@ -5,22 +5,9 @@ import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../../../lib/password";
 
 const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
+  log: ["query", "info", "warn", "error"],
 });
 // const prisma = new PrismaClient();
-
-//Functions
-//get all rows
-// export async function GET() {
-//   try {
-//     const users = await prisma.user.findMany();
-//     return NextResponse.json(users);
-//   } catch (error) {
-//     return NextResponse.json({ error: "Error fetching users" });
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// }
 
 //interfaces
 type LoginCredentials = {
@@ -77,5 +64,7 @@ export async function POST(request: Request) {
       { error: error.message || "An unknown error occurred." },
       { status: 500 }
     );
+  } finally {
+    prisma.$disconnect();
   }
 }

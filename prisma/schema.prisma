@@ -109,15 +109,16 @@ model Product {
   name          String
   description   String?
   basicUnitUuid String
-  sellingPrice  Float   @default(1)
+  sellingPrice  Float    @default(1)
   supplies      Supply[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  Sale          Sale[]
+  Sales         Sale[]
   categoryUuid  String // Foreign key for the category
   Category      Category      @relation(fields: [categoryUuid], references: [uuid]) // Enforce relationship
   PackagingUnit PackagingUnit @relation(fields: [basicUnitUuid], references: [uuid])
+  basketSale    basketSale[]
 }
 
 model Category {
@@ -159,6 +160,9 @@ model Sale {
   product             Product  @relation(fields: [productUuid], references: [uuid])
   quantity            Decimal
   price               Decimal
+  taxPercentage       Decimal
+  packingUnitUuid     String
+  paymentStatus       String
   userUuid            String
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -168,9 +172,13 @@ model Sale {
 model basketSale {
   id                  Int      @id @default(autoincrement())
   uuid                String   @unique @default(uuid()) // UUID as a unique field
+  description         String
   productUuid         String
+  product             Product  @relation(fields: [productUuid], references: [uuid])
   quantity            Decimal
-  price               Float
+  price               Decimal
+  taxPercentage       Decimal
+  packingUnitUuid     String
   userUuid            String
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt

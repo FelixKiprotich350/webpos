@@ -17,6 +17,9 @@ export async function GET() {
       { status: 500 }
     );
   }
+  finally{
+    prisma.$disconnect();
+  }
 }
 
 // POST: Create a new category
@@ -39,5 +42,8 @@ export async function POST(request: Request) {
       { error: "Internal Server Error" },
       { status: 500 }
     );
+  }
+  finally{
+    prisma.$disconnect();
   }
 }

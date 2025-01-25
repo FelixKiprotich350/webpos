@@ -7,18 +7,6 @@ import { hashPassword, verifyPassword } from "../../../lib/password";
 
 const prisma = new PrismaClient();
 
-//Functions
-//get all rows
-// export async function GET() {
-//   try {
-//     const users = await prisma.user.findMany();
-//     return NextResponse.json(users);
-//   } catch (error) {
-//     return NextResponse.json({ error: "Error fetching users" });
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// }
 
 //interfaces
 type LoginCredentials = {
@@ -74,4 +62,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json({ error: error }, { status: 500 });
   }
+  finally{
+      prisma.$disconnect();
+    }
 }

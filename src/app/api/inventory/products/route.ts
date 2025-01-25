@@ -21,6 +21,9 @@ export async function GET() {
       { status: 500 }
     );
   }
+  finally{
+      prisma.$disconnect();
+    }
 }
 
 export async function PUT(req: Request) {
@@ -61,6 +64,9 @@ export async function PUT(req: Request) {
       { status: 500 }
     );
   }
+  finally{
+      prisma.$disconnect();
+    }
 }
 
 export async function DELETE() {
@@ -74,6 +80,9 @@ export async function DELETE() {
       { status: 500 }
     );
   }
+  finally{
+      prisma.$disconnect();
+    }
 }
 
 export async function POST(req: Request) {
@@ -119,4 +128,7 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+  finally{
+      prisma.$disconnect();
+    }
 }
