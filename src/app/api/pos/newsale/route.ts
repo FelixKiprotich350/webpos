@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient, Product } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
+import { v4 as uuidv4 } from "uuid";
 
 const prisma = new PrismaClient();
 interface paymentItem {
@@ -73,49 +74,135 @@ interface SellingItem extends Product {
 //     }
 // }
 
+// export async function POST(req: Request) {
+//   try {
+//     // Parse the request body
+//     const body = await req.json();
+//     const { products, payments } = body;
+//     const allProducts = products as unknown as Array<Product>;
+//     const allPayments = payments as unknown as Array<paymentItem>;
+//     // Validate required fields
+//     if (allPayments.length <= 0 || allProducts.length <= 0) {
+//       return NextResponse.json(
+//         { error: "Missing required fields: Payments and Items required!" },
+//         { status: 400 }
+//       );
+//     }
+
+//     // Create a new sale
+//     const newsale = await prisma.productSale.create({
+//       data: {
+//         name,
+//         description: description || null, // Optional field
+//         sellingPrice: Number(sellingPrice) || 1,
+//         Category: {
+//           connect: {
+//             uuid: categoryUuid, // Match your `categoryUuid` field with the unique identifier
+//           },
+//         },
+//         PackagingUnit: {
+//           connect: {
+//             uuid: basicUnitUuid, // Match your `basicUnitUuid` field with the unique identifier
+//           },
+//         },
+//       },
+//     });
+
+//     // Return the created product
+//     return NextResponse.json({}, { status: 201 });
+//   } catch (error) {
+//     console.error("Error creating product:", error);
+//     return NextResponse.json(
+//       { error: "Internal Server Error" },
+//       { status: 500 }
+//     );
+//   } finally {
+//     prisma.$disconnect();
+//   }
+// }
+export function generateSaleNumber(): string {
+  const timestamp = Math.floor(Date.now() / 1000); // Get current Unix timestamp in seconds
+  return `S-${timestamp}`;
+}
+
 export async function POST(req: Request) {
   try {
     // Parse the request body
     const body = await req.json();
     const { products, payments } = body;
-    const allProducts = products as unknown as Array<Product>;
-    const allPayments = payments as unknown as Array<paymentItem>;
+
+    const allProducts = products as Array<SellingItem>;
+    const allPayments = payments as Array<paymentItem>;
+
     // Validate required fields
-    if (allPayments.length <= 0 || allProducts.length <= 0) {
+    if (!allProducts?.length || !allPayments?.length) {
       return NextResponse.json(
-        { error: "Missing required fields: Payments and Items required!" },
+        {
+          error: "Missing required fields: Products and Payments are required!",
+        },
         { status: 400 }
       );
     }
 
-    // Create a new sale
-    const newsale = await prisma.productSale.create({
-      data: {
-        name,
-        description: description || null, // Optional field
-        sellingPrice: Number(sellingPrice) || 1,
-        Category: {
-          connect: {
-            uuid: categoryUuid, // Match your `categoryUuid` field with the unique identifier
-          },
+    // Generate UUID for the sale
+    const saleUuid = uuidv4();
+    const mastercode = generateSaleNumber();
+
+    // Start a transaction to save data into three models
+    const master = await prisma.$transaction(async (transaction) => {
+      // Save data to SalesMaster
+      const salesMaster = await transaction.salesMaster.create({
+        data: {
+          uuid: saleUuid,
+          salesCode: mastercode,
         },
-        PackagingUnit: {
-          connect: {
-            uuid: basicUnitUuid, // Match your `basicUnitUuid` field with the unique identifier
-          },
-        },
-      },
+      });
+
+      // Save products to SalesItems
+      await Promise.all(
+        allProducts.map((product) =>
+          transaction.productSale.create({
+            data: {
+              masterCode: mastercode, // Associate with SalesMaster
+              productUuid: product.uuid, // Product-specific UUID or reference
+              quantity: product.quantity,
+              price: product.sellingPrice,
+              taxPercentage: product.tax,
+              paymentStatus: "PENDING",
+              userUuid: "Felix",
+              packingUnitUuid: product.basicUnitUuid,
+            },
+          })
+        )
+      );
+
+      // Save payments to Payments
+      await Promise.all(
+        allPayments.map((payment) =>
+          transaction.salesPayments.create({
+            data: {
+              salesMasterCode: mastercode, // Associate with SalesMaster
+              paymentMode: payment.paymentMode,
+              amountPaid: payment.amount,
+              refference: payment.reference,
+              createdAt: new Date(Date.now()),
+            },
+          })
+        )
+      );
+
+      return salesMaster; // Return the master sale record
     });
 
-    // Return the created product
-    return NextResponse.json({}, { status: 201 });
+    // Return the created sale
+    return NextResponse.json(master, { status: 201 });
   } catch (error) {
-    console.error("Error creating product:", error);
+    console.error("Error creating sale:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
     );
   } finally {
-    prisma.$disconnect();
+    await prisma.$disconnect();
   }
 }

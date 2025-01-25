@@ -153,20 +153,32 @@ model ProductPackUnit {
 }
 
 ///sales modesls
+model SalesMaster {
+  id            Int             @id @default(autoincrement()) // Int as PK
+  uuid          String          @unique @default(uuid()) // UUID as a unique field
+  salesCode     String          @unique
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  ProductSale   ProductSale[]
+  SalesPayments SalesPayments[]
+}
+
 model ProductSale {
-  id                  Int      @id @default(autoincrement())
-  uuid                String   @unique @default(uuid()) // UUID as a unique field
+  id                  Int         @id @default(autoincrement())
+  uuid                String      @unique @default(uuid()) // UUID as a unique field
   productUuid         String
-  product             Product  @relation(fields: [productUuid], references: [uuid])
+  masterCode          String
+  product             Product     @relation(fields: [productUuid], references: [uuid])
   quantity            Decimal
   price               Decimal
   taxPercentage       Decimal
   packingUnitUuid     String
   paymentStatus       String
   userUuid            String
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
   productPackUnitUuid String?
+  SalesMaster         SalesMaster @relation(fields: [masterCode], references: [uuid])
 }
 
 model basketSale {
@@ -183,4 +195,17 @@ model basketSale {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   productPackUnitUuid String?
+}
+
+//payments
+model SalesPayments {
+  id              Int         @id @default(autoincrement()) // Int as PK
+  uuid            String      @unique @default(uuid()) // UUID as a unique field
+  salesMasterCode String      @unique
+  paymentMode     String
+  amountPaid      Float
+  refference      String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  SalesMaster     SalesMaster @relation(fields: [salesMasterCode], references: [salesCode])
 }
