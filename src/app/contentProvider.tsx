@@ -232,7 +232,7 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                   </Link>
                 </SideNavMenu>
                 <SideNavMenu title="Settings">
-                  <SideNavMenuItem href="/sources/dataentry"></SideNavMenuItem>
+                  {/* <SideNavMenuItem href="/sources/dataentry"></SideNavMenuItem> */}
                   <SideNavMenuItem href="/sources/csv">CSV</SideNavMenuItem>
                   <SideNavMenuItem href="/sources/database">
                     Database

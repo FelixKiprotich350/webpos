@@ -16,13 +16,19 @@ import {
   Tile,
   Modal,
 } from "@carbon/react";
-import { Product } from "@prisma/client";
+import { Product, ProductSale } from "@prisma/client";
 import styles from "./page.scss";
 import { Money } from "@carbon/icons-react";
-import {} from "@carbon/react";
-import { Edit } from "@carbon/icons-react";
-import { NumberInput, Select, SelectItem } from "carbon-components-react";
+import { TrashCan, Edit } from "@carbon/icons-react";
+import {
+  Dropdown,
+  NumberInput,
+  Select,
+  SelectItem,
+  TextInput,
+} from "carbon-components-react";
 import { useNotification } from "app/layoutComponents/notificationProvider";
+import { set } from "lodash";
 
 interface SellingItem extends Product {
   quantity: number;
@@ -31,6 +37,11 @@ interface SellingItem extends Product {
 }
 
 interface NewSalePageProps {}
+interface paymentItem {
+  paymentMode: string;
+  amount: number;
+  reference: string;
+}
 
 const NewSalePage: FC<NewSalePageProps> = (props) => {
   const { addNotification } = useNotification();
@@ -41,8 +52,12 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
   const [items, setItems] = useState<SellingItem[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
+  const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
   const [formData, setFormData] = useState<Partial<SellingItem>>();
-  const [payments, setTicketPayments] = useState<any>();
+  const [payments, setTicketPayments] = useState<paymentItem[]>([]);
+  const [paymentMode, setPaymentMode] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [reference, setReference] = useState("");
 
   // Fetch products from API
   useEffect(() => {
@@ -128,14 +143,92 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
     const grandTotal = subtotal + totalTax;
     return { subtotal, totalTax, grandTotal };
   };
+  const totalPaid = payments.reduce(
+    (sum, item) => sum + Number(item.amount),
+    0
+  );
 
-  const handleCompleteCheckout = () => {
-    setShowCheckoutModal(true);
+  const handleCompleteCheckout = async () => {
     try {
+      if (totalPaid < grandTotal) {
+        addNotification({
+          title: "Operation Failed",
+          subtitle: "Amount Paid is Insufficient",
+          kind: "info",
+          timeout: 5000,
+        });
+      }
+      //save the sales
+      const method = "POST";
+      const url = "/api/pos/newsale";
+      let payload = { payments: payments, products: items };
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        addNotification({
+          kind: "error",
+          title: "Operation Failed",
+          subtitle: "Failed to save the sales!",
+          timeout: 5000,
+        });
+      }
+
+      const saleItem: ProductSale = await response.json();
+      addNotification({
+        kind: "success",
+        title: "Operation Completed",
+        subtitle: "Item Sold Successfully.",
+        timeout: 5000,
+      });
     } catch (error) {
-    } finally {
-      // setShowCheckoutModal(false);
+      addNotification({
+        title: "Error Occurred",
+        subtitle: error as string,
+        kind: "error",
+        timeout: 5000,
+      });
+      setShowCheckoutModal(false);
     }
+  };
+  const handleAddPaymentModal = () => {
+    try {
+      setTicketPayments((prevPayments) => {
+        // Check if a payment with the same mode already exists
+        const exists = prevPayments.some(
+          (payment) => payment.paymentMode === paymentMode
+        );
+
+        if (exists) {
+          // Optionally, you can notify the user about the duplicate
+          addNotification({
+            title: "Operation Failed",
+            kind: "warning",
+            subtitle: "Payment mode already exists in the list!",
+          });
+          return prevPayments; // Return the existing array without changes
+        }
+
+        // Add the new payment item if it doesn't exist
+        return [
+          ...prevPayments,
+          { paymentMode: paymentMode, amount: amount, reference: reference },
+        ];
+      });
+    } catch (error) {
+      console.error("Error adding payment:", error);
+    }
+  };
+
+  const handleRemoveItem = (pitem: paymentItem) => {
+    // Filter out the item with the matching reference
+    const updatedPayments = payments.filter(
+      (item) => item.paymentMode != pitem.paymentMode
+    );
+    setTicketPayments(updatedPayments);
   };
 
   const { subtotal, totalTax, grandTotal } = calculateSummary();
@@ -296,20 +389,10 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             primaryButtonText={"Complete Sales"}
             secondaryButtonText="Cancel"
             onRequestClose={() => setShowCheckoutModal(false)}
-            onRequestSubmit={() => {
-              // Update item in the list with the new quantity
-              const updatedItems = items.map((item) =>
-                item.uuid === formData?.uuid
-                  ? {
-                      ...item,
-                      quantity: formData?.quantity ?? 1,
-                      total: formData?.quantity ?? 1 * item.sellingPrice,
-                    }
-                  : item
-              );
-              setItems(updatedItems); // Update the state with the modified array
-              setShowCheckoutModal(false);
-            }}
+            onRequestSubmit={() => handleCompleteCheckout()}
+            primaryButtonDisabled={
+              totalPaid < grandTotal || totalPaid <= 0 || grandTotal <= 0
+            }
           >
             <div>
               <Tile>
@@ -319,9 +402,81 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
               </Tile>
               <Tile>
                 <p style={{ fontSize: "1.5rem" }}>
-                  <strong>Total Charged:</strong> Ksh {grandTotal.toFixed(2)}
+                  <strong>Total Paid:</strong> Ksh {totalPaid}
                 </p>
               </Tile>
+              <Tile>
+                <p style={{ fontSize: "1.5rem" }}>
+                  <strong>Balance:</strong> Ksh{" "}
+                  {(totalPaid - grandTotal).toFixed(2)}
+                </p>
+              </Tile>
+            </div>
+          </Modal>
+        )}
+
+        {showPaymentModal && (
+          <Modal
+            open={showPaymentModal}
+            modalHeading={"Add Payment"}
+            primaryButtonText={"Add Payment"}
+            secondaryButtonText="Cancel"
+            onRequestClose={() => setShowPaymentModal(false)}
+            onRequestSubmit={() => {
+              handleAddPaymentModal();
+              setShowPaymentModal(false);
+            }}
+          >
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            >
+              {/* Payment Mode Selection */}
+              <div>
+                <Dropdown
+                  label="Select Payment Mode"
+                  id="paymentMode"
+                  titleText="Select Payment Mode"
+                  items={["Cash", "Card", "Mpesa", "Bank Transfer"]}
+                  itemToString={(item) => (item ? item : "")}
+                  onChange={({ selectedItem }) => {
+                    // Update payment mode when an option is selected
+                    setPaymentMode(selectedItem || "");
+                  }}
+                />
+              </div>
+
+              {/* Amount Input */}
+              <div>
+                <label
+                  htmlFor="amount"
+                  style={{ display: "block", marginBottom: "0.5rem" }}
+                >
+                  Amount
+                </label>
+                <NumberInput
+                  id="amount"
+                  min={0}
+                  step={0.01}
+                  value={amount}
+                  onChange={(event: any) => {
+                    // Update amount based on user input
+                    setAmount(event.target.value);
+                  }}
+                  invalidText="Invalid amount"
+                  placeholder="Enter amount"
+                />
+              </div>
+
+              {/* Reference Input */}
+              <div>
+                <TextInput
+                  id="reference"
+                  labelText="Reference"
+                  placeholder="Enter reference (optional)"
+                  value={reference}
+                  onChange={(event) => setReference(event.target.value)}
+                />
+              </div>
             </div>
           </Modal>
         )}
@@ -345,43 +500,37 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
           }}
         >
           <Tile>
-            <h3 style={{ textAlign: "left" }}>
-              <u>Summary</u>
-            </h3>
             <p style={{ fontSize: "1.5rem" }}>
-              <strong>Subtotal:</strong>
+              <strong>Subtotal:</strong>Ksh {subtotal.toFixed(2)}
             </p>
-            <p style={{ fontSize: "1.5rem" }}> Ksh {subtotal.toFixed(2)}</p>
             <p style={{ fontSize: "1.5rem" }}>
-              <strong>Total Tax:</strong>
+              <strong>Total Tax:</strong>Ksh {totalTax.toFixed(2)}
             </p>
-            <p style={{ fontSize: "1.5rem" }}>Ksh {totalTax.toFixed(2)}</p>
             <p style={{ fontSize: "1.5rem" }}>
-              <strong>Grand Total:</strong>
+              <strong>Grand Total:</strong>Ksh {grandTotal.toFixed(2)}
             </p>
-            <p style={{ fontSize: "1.5rem" }}>Ksh {grandTotal.toFixed(2)}</p>
             <Table>
               <TableHead>
                 <TableRow>
                   <TableHeader>Mode</TableHeader>
                   <TableHeader>Amount</TableHeader>
+                  <TableHeader>Reference</TableHeader>
                   <TableHeader></TableHeader>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.sellingPrice?.toFixed(2)}</TableCell>
-                    <TableCell>{item.basicUnitUuid}</TableCell>
-                    <TableCell>{item.quantity}</TableCell>
-                    <TableCell>{item.total.toFixed(2)}</TableCell>
+                {payments.map((item) => (
+                  <TableRow key={item.paymentMode}>
+                    <TableCell>{item.paymentMode}</TableCell>
+                    <TableCell>{item.amount}</TableCell>
+                    <TableCell>{item.reference}</TableCell>
                     <TableCell>
                       <IconButton
                         kind="ghost"
                         size="small"
-                        onClick={() => handleEditItem(item)}
-                        renderIcon={Edit}
+                        onClick={() => handleRemoveItem(item)}
+                        renderIcon={TrashCan}
+                        iconDescription="Remove item"
                       />
                     </TableCell>
                   </TableRow>
@@ -390,47 +539,80 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             </Table>
           </Tile>
         </div>
-
         {/* Fixed buttons */}
         <div
           style={{
             display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "center",
+            flexDirection: "column",
             gap: "1rem",
             marginTop: "1rem",
             padding: "0.5rem 0",
           }}
         >
-          <Button
-            kind="secondary"
-            style={{ flex: 1, minWidth: "22%" }}
-            onClick={() => console.log("Hold action...")}
+          {/* First Row */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: "1rem",
+            }}
           >
-            Hold
-          </Button>
-          <Button
-            kind="secondary"
-            style={{ flex: 1, minWidth: "22%" }}
-            onClick={() => console.log("Retrieve action...")}
+            <Button
+              kind="secondary"
+              style={{ flex: 1, minWidth: "48%" }}
+              onClick={() => console.log("Hold action...")}
+            >
+              Hold
+            </Button>
+            <Button
+              kind="secondary"
+              style={{ flex: 1, minWidth: "48%" }}
+              onClick={() => console.log("Retrieve action...")}
+            >
+              Retrieve
+            </Button>
+          </div>
+
+          {/* Second Row */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: "1rem",
+            }}
           >
-            Retrieve
-          </Button>
-          <Button
-            kind="primary"
-            style={{ flex: 1, minWidth: "22%" }}
-            onClick={() => console.log("Printing...")}
+            <Button
+              kind="secondary"
+              style={{ flex: 1, minWidth: "48%" }}
+              onClick={() => console.log("Printing...")}
+            >
+              Print
+            </Button>
+            <Button
+              kind="secondary"
+              style={{ flex: 1, minWidth: "48%" }}
+              onClick={() => setShowPaymentModal(true)}
+            >
+              Pay
+            </Button>
+          </div>
+
+          {/* Third Row */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+            }}
           >
-            Print
-          </Button>
-          <Button
-            kind="primary"
-            style={{ flex: 1, minWidth: "22%" }}
-            onClick={() => handleCompleteCheckout()}
-          >
-            Complete & cHECKOUT
-          </Button>
+            <Button
+              kind="primary"
+              style={{ flex: 1, minWidth: "100%" }}
+              onClick={() => setShowCheckoutModal(true)}
+              disabled={Number(grandTotal) <= 0}
+            >
+              Complete & Checkout
+            </Button>
+          </div>
         </div>
       </div>
     </div>

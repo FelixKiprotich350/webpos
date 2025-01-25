@@ -114,7 +114,7 @@ model Product {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  Sales         Sale[]
+  Sales         ProductSale[]
   categoryUuid  String // Foreign key for the category
   Category      Category      @relation(fields: [categoryUuid], references: [uuid]) // Enforce relationship
   PackagingUnit PackagingUnit @relation(fields: [basicUnitUuid], references: [uuid])
@@ -153,7 +153,7 @@ model ProductPackUnit {
 }
 
 ///sales modesls
-model Sale {
+model ProductSale {
   id                  Int      @id @default(autoincrement())
   uuid                String   @unique @default(uuid()) // UUID as a unique field
   productUuid         String
