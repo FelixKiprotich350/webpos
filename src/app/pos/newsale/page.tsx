@@ -16,7 +16,7 @@ import {
   Tile,
   Modal,
 } from "@carbon/react";
-import { Product, ProductSale } from "@prisma/client";
+import { PackagingUnit, Product, ProductSale } from "@prisma/client";
 import styles from "./page.scss";
 import { Money } from "@carbon/icons-react";
 import { TrashCan, Edit } from "@carbon/icons-react";
@@ -48,16 +48,19 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
+  const [packagingUnits, setPackagingUnits] = useState<PackagingUnit[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [items, setItems] = useState<SellingItem[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
+  const [showHoldSaleModal, setShowHoldSaleModal] = useState<boolean>(false);
   const [formData, setFormData] = useState<Partial<SellingItem>>();
   const [payments, setTicketPayments] = useState<paymentItem[]>([]);
   const [paymentMode, setPaymentMode] = useState("");
   const [amount, setAmount] = useState(0);
   const [reference, setReference] = useState("");
+  const [holdDescription, setHoldDescription] = useState("");
 
   // Fetch products from API
   useEffect(() => {
@@ -75,8 +78,21 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
         });
       }
     };
+    const fetchUnits = async () => {
+      try {
+        const response = await fetch("/api/inventory/packunits"); // Replace with your API endpoint
+        if (!response.ok) {
+          console.log("Failed to fetch packaging units.");
+        }
+        const data: PackagingUnit[] = await response.json();
+        setPackagingUnits(data);
+      } catch (err: any) {
+        console.log(err.message || "An error occurred while fetching data.");
+      }
+    };
 
     fetchProducts();
+    fetchUnits();
   }, []);
 
   // Update filtered products based on search term
@@ -238,6 +254,40 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
     setTicketPayments(updatedPayments);
   };
 
+  const handleHoldItems = async () => {
+    try {
+      if (holdDescription == "" || items.length <= 0) {
+        return;
+      }
+      const method = "POST";
+      const url = "/api/pos/newsale/holdsale";
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ products: items, description: holdDescription }),
+      });
+      if (!response.ok) {
+        addNotification({
+          title: "Operation Failed",
+          subtitle: "Failed to Hold the Sales Transaction.",
+          kind: "error",
+          timeout: 5000,
+        });
+      } else {
+        addNotification({
+          title: "Operation Completed",
+          subtitle: "Sales Transaction hold was successfull",
+          kind: "success",
+          timeout: 5000,
+        });
+      }
+    } catch (error) {
+      console.error("Error holding items:", error);
+    } finally {
+      setShowHoldSaleModal(false);
+      window.location.reload();
+    }
+  };
   const { subtotal, totalTax, grandTotal } = calculateSummary();
 
   return (
@@ -331,8 +381,14 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
               {items.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.sellingPrice?.toFixed(2)}</TableCell>
-                  <TableCell>{item.basicUnitUuid}</TableCell>
+                  <TableCell>{Number(item.sellingPrice)?.toFixed(2)}</TableCell>
+                  <TableCell>
+                    {
+                      packagingUnits.find(
+                        (unit) => unit.uuid == item.basicUnitUuid
+                      )?.name
+                    }
+                  </TableCell>
                   <TableCell>{item.quantity}</TableCell>
                   <TableCell>{item.total.toFixed(2)}</TableCell>
                   <TableCell>
@@ -491,6 +547,35 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             </div>
           </Modal>
         )}
+        {showHoldSaleModal && (
+          <Modal
+            open={showHoldSaleModal}
+            modalHeading={"Hold Current Sales"}
+            primaryButtonText={"Hold Sales"}
+            secondaryButtonText="Cancel"
+            onRequestClose={() => setShowHoldSaleModal(false)}
+            primaryButtonDisabled={holdDescription == "" || items.length <= 0}
+            onRequestSubmit={() => {
+              handleHoldItems();
+              // setShowPaymentModal(false);
+            }}
+          >
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            >
+              {/* Description Input */}
+              <div>
+                <TextInput
+                  id="description"
+                  labelText="Description"
+                  placeholder="Enter description (Required)"
+                  value={holdDescription}
+                  onChange={(event) => setHoldDescription(event.target.value)}
+                />
+              </div>
+            </div>
+          </Modal>
+        )}
       </div>
 
       {/* Right panel */}
@@ -571,7 +656,7 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             <Button
               kind="secondary"
               style={{ flex: 1, minWidth: "48%" }}
-              onClick={() => console.log("Hold action...")}
+              onClick={() => setShowHoldSaleModal(true)}
             >
               Hold
             </Button>

@@ -244,7 +244,9 @@ const InventoryItems: FC = () => {
                 <TableCell>{item.name}</TableCell>
                 <TableCell>{item.Category?.name}</TableCell>
                 <TableCell>{item.PackagingUnit?.name}</TableCell>
-                <TableCell>Ksh {item.sellingPrice?.toFixed(2) || 0}</TableCell>
+                <TableCell>
+                  Ksh {Number(item.sellingPrice)?.toFixed(2) || 0}
+                </TableCell>
                 <TableCell>{item.description}</TableCell>
                 <TableCell>
                   <Button

@@ -108,7 +108,7 @@ model Product {
   name          String
   description   String?
   basicUnitUuid String
-  sellingPrice  Decimal    @default(1)
+  sellingPrice  Decimal  @default(1)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -163,7 +163,7 @@ model ProductSale {
   uuid                String      @unique @default(uuid()) // UUID as a unique field
   productUuid         String
   masterCode          String
-  product             Product     @relation(fields: [productUuid], references: [uuid])
+  InventoryProduct    Product     @relation(fields: [productUuid], references: [uuid])
   quantity            Decimal
   price               Decimal
   taxPercentage       Decimal

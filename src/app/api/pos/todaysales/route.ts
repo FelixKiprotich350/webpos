@@ -1,19 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient, Product } from "@prisma/client";
-import { NextApiRequest, NextApiResponse } from "next";
-import { v4 as uuidv4 } from "uuid";
 
 const prisma = new PrismaClient();
-interface paymentItem {
-  paymentMode: string;
-  amount: number;
-  reference: string;
-}
-interface SellingItem extends Product {
-  quantity: number;
-  tax: number;
-  total: number;
-}
 
 export async function GET() {
   try {
@@ -32,6 +20,13 @@ export async function GET() {
         },
       },
       orderBy: { createdAt: "desc" },
+      include: {
+        InventoryProduct: {
+          include: {
+            Category: true, // Fetch related category
+          },
+        },
+      },
     });
 
     return NextResponse.json(units);

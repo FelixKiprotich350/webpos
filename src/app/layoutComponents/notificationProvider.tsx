@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { ToastNotification } from "carbon-components-react";
 import "./NotificationProvider.css"; // Add styles for positioning
+import { Theme } from "@carbon/react";
 
 type Notification = {
   id: number;
@@ -14,9 +15,13 @@ type NotificationContextType = {
   addNotification: (notification: Omit<Notification, "id">) => void;
 };
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined
+);
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const addNotification = (notification: Omit<Notification, "id">) => {
@@ -40,7 +45,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             kind={kind}
             title={title}
             subtitle={subtitle}
-            onCloseButtonClick={() => setNotifications((prev) => prev.filter((n) => n.id !== id))}
+            onCloseButtonClick={() =>
+              setNotifications((prev) => prev.filter((n) => n.id !== id))
+            }
           />
         ))}
       </div>
@@ -51,7 +58,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 export const useNotification = (): NotificationContextType => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error("useNotification must be used within a NotificationProvider");
+    throw new Error(
+      "useNotification must be used within a NotificationProvider"
+    );
   }
   return context;
 };
