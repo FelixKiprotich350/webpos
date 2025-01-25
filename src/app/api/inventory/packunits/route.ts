@@ -14,24 +14,19 @@ export async function GET() {
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Internal server error" });
+  } finally {
+    prisma.$disconnect();
   }
-  finally{
-      prisma.$disconnect();
-    }
 }
 
- 
-export async function POST(req: NextApiRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await req.body; // Parse the JSON body explicitly
+    const body = await req.json(); // Parse the JSON body explicitly
     const { name, countable } = body;
+    console.log(name, countable);
     if (!name || name.trim() === "") {
-      return NextResponse.json(
-        { error: "Name is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
-
 
     const newUnit = await prisma.packagingUnit.create({
       data: {
@@ -43,11 +38,13 @@ export async function POST(req: NextApiRequest) {
     return NextResponse.json(newUnit, { status: 201 });
   } catch (error) {
     console.error("Error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  } finally {
+    prisma.$disconnect();
   }
-  finally{
-      prisma.$disconnect();
-    }
 }
 
 // PUT: Update a packaging unit
@@ -70,17 +67,15 @@ export async function PUT(req: NextApiRequest) {
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Internal server error" });
+  } finally {
+    prisma.$disconnect();
   }
-  finally{
-      prisma.$disconnect();
-    }
 }
 
 // DELETE: Delete a packaging unit
 export async function DELETE(req: NextApiRequest) {
   try {
     const { id } = req.body;
-
     if (!id) {
       return NextResponse.json({ error: "ID is required" });
     }
@@ -93,8 +88,7 @@ export async function DELETE(req: NextApiRequest) {
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Internal server error" });
+  } finally {
+    prisma.$disconnect();
   }
-  finally{
-      prisma.$disconnect();
-    }
 }

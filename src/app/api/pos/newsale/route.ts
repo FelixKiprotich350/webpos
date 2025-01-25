@@ -129,11 +129,11 @@ export async function POST(req: Request) {
   try {
     // Parse the request body
     const body = await req.json();
-    const { products, payments } = body;
+    const { products, payments, isfullypaid } = body;
 
     const allProducts = products as Array<SellingItem>;
     const allPayments = payments as Array<paymentItem>;
-
+    const isFullyPaid = isfullypaid as boolean;
     // Validate required fields
     if (!allProducts?.length || !allPayments?.length) {
       return NextResponse.json(
@@ -153,22 +153,22 @@ export async function POST(req: Request) {
       // Save data to SalesMaster
       const salesMaster = await transaction.salesMaster.create({
         data: {
-          uuid: saleUuid,
           salesCode: mastercode,
         },
       });
+      console.log("Generated salesCode:", salesMaster.salesCode);
 
       // Save products to SalesItems
       await Promise.all(
         allProducts.map((product) =>
           transaction.productSale.create({
             data: {
-              masterCode: mastercode, // Associate with SalesMaster
-              productUuid: product.uuid, // Product-specific UUID or reference
+              masterCode: salesMaster.salesCode, // Use the salesCode from the created SalesMaster
+              productUuid: product.uuid,
               quantity: product.quantity,
               price: product.sellingPrice,
               taxPercentage: product.tax,
-              paymentStatus: "PENDING",
+              paymentStatus: isFullyPaid ? 'PAID':"PENDING",
               userUuid: "Felix",
               packingUnitUuid: product.basicUnitUuid,
             },
@@ -181,11 +181,11 @@ export async function POST(req: Request) {
         allPayments.map((payment) =>
           transaction.salesPayments.create({
             data: {
-              salesMasterCode: mastercode, // Associate with SalesMaster
+              salesMasterCode: salesMaster.salesCode, // Use the salesCode from the created SalesMaster
               paymentMode: payment.paymentMode,
-              amountPaid: payment.amount,
+              amountPaid: Number(payment.amount),
               refference: payment.reference,
-              createdAt: new Date(Date.now()),
+              createdAt: new Date(),
             },
           })
         )

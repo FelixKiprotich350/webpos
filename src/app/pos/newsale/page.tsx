@@ -115,7 +115,8 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             ? {
                 ...item,
                 quantity: item.quantity + 1,
-                total: (item.quantity + 1) * item.sellingPrice + item.tax,
+                total:
+                  (item.quantity + 1) * Number(item.sellingPrice) + item.tax,
               }
             : item
         )
@@ -126,8 +127,8 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
         {
           ...product,
           quantity: 1,
-          tax: product.sellingPrice * 0.1, // Assuming 10% tax
-          total: product.sellingPrice * 1.1,
+          tax: Number(product.sellingPrice) * 0.16, // Assuming 10% tax
+          total: Number(product.sellingPrice),
         },
       ]);
     }
@@ -161,7 +162,7 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
       //save the sales
       const method = "POST";
       const url = "/api/pos/newsale";
-      let payload = { payments: payments, products: items };
+      let payload = { payments: payments, products: items, isfullypaid: true };
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -181,9 +182,11 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
       addNotification({
         kind: "success",
         title: "Operation Completed",
-        subtitle: "Item Sold Successfully.",
+        subtitle: "Items Sold Successfully.",
         timeout: 5000,
       });
+      setShowCheckoutModal(false);
+      window.location.reload();
     } catch (error) {
       addNotification({
         title: "Error Occurred",
@@ -220,6 +223,10 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
       });
     } catch (error) {
       console.error("Error adding payment:", error);
+    } finally {
+      setPaymentMode("");
+      setAmount(0);
+      setReference("");
     }
   };
 
@@ -356,7 +363,8 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
                   ? {
                       ...item,
                       quantity: formData?.quantity ?? 1,
-                      total: formData?.quantity ?? 1 * item.sellingPrice,
+                      total:
+                        formData?.quantity ?? 1 * Number(item.sellingPrice),
                     }
                   : item
               );
@@ -422,6 +430,9 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             primaryButtonText={"Add Payment"}
             secondaryButtonText="Cancel"
             onRequestClose={() => setShowPaymentModal(false)}
+            primaryButtonDisabled={
+              amount <= 0 || paymentMode == "" || paymentMode == null
+            }
             onRequestSubmit={() => {
               handleAddPaymentModal();
               setShowPaymentModal(false);

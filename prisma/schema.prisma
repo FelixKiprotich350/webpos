@@ -81,27 +81,26 @@ model Permission {
 model Supplier {
   id         Int      @id @default(autoincrement())
   uuid       String   @unique @default(uuid()) // UUID as a unique field
-  supplies   Supply[]
   personUuid String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
 
-model Supply {
-  id                  Int              @id @default(autoincrement())
-  uuid                String           @unique @default(uuid()) // UUID as a unique field
-  productUuid         String
-  product             Product          @relation(fields: [productUuid], references: [uuid])
-  supplierUuid        String
-  supplier            Supplier         @relation(fields: [supplierUuid], references: [uuid])
-  quantity            Decimal
-  receivedAt          DateTime         @default(now())
-  userUuid            String
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  ProductPackUnit     ProductPackUnit? @relation(fields: [productPackUnitUuid], references: [uuid])
-  productPackUnitUuid String?
-}
+// model Supply {
+//   id                  Int              @id @default(autoincrement())
+//   uuid                String           @unique @default(uuid()) // UUID as a unique field
+//   productUuid         String
+//   product             Product          @relation(fields: [productUuid], references: [uuid])
+//   supplierUuid        String
+//   supplier            Supplier         @relation(fields: [supplierUuid], references: [uuid])
+//   quantity            Decimal
+//   receivedAt          DateTime         @default(now())
+//   userUuid            String
+//   createdAt           DateTime         @default(now())
+//   updatedAt           DateTime         @updatedAt
+//   ProductPackUnit     ProductPackUnit? @relation(fields: [productPackUnitUuid], references: [uuid])
+//   productPackUnitUuid String?
+// }
 
 model Product {
   id            Int      @id @default(autoincrement())
@@ -109,8 +108,7 @@ model Product {
   name          String
   description   String?
   basicUnitUuid String
-  sellingPrice  Float    @default(1)
-  supplies      Supply[]
+  sellingPrice  Decimal    @default(1)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -149,14 +147,11 @@ model ProductPackUnit {
   packUnitUuid String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  Supplies     Supply[]
 }
 
 ///sales modesls
 model SalesMaster {
-  id            Int             @id @default(autoincrement()) // Int as PK
-  uuid          String          @unique @default(uuid()) // UUID as a unique field
-  salesCode     String          @unique
+  salesCode     String          @id // UUID as a unique field
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   ProductSale   ProductSale[]
@@ -178,7 +173,7 @@ model ProductSale {
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
   productPackUnitUuid String?
-  SalesMaster         SalesMaster @relation(fields: [masterCode], references: [uuid])
+  SalesMaster         SalesMaster @relation(fields: [masterCode], references: [salesCode])
 }
 
 model basketSale {
@@ -201,9 +196,9 @@ model basketSale {
 model SalesPayments {
   id              Int         @id @default(autoincrement()) // Int as PK
   uuid            String      @unique @default(uuid()) // UUID as a unique field
-  salesMasterCode String      @unique
+  salesMasterCode String
   paymentMode     String
-  amountPaid      Float
+  amountPaid      Decimal
   refference      String
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
