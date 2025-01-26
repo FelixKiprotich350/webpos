@@ -22,6 +22,7 @@ import {
   PackagingUnit,
   Product,
   ProductSale,
+  ClientConfiguration,
 } from "@prisma/client";
 import styles from "./page.scss";
 import { Money } from "@carbon/icons-react";
@@ -41,17 +42,16 @@ interface SellingItem extends Product {
   tax: number;
   total: number;
 }
-
-interface NewSalePageProps {}
+ 
 interface paymentItem {
   paymentMode: string;
   amount: number;
   reference: string;
 }
 
-const NewSalePage: FC<NewSalePageProps> = (props) => {
+const NewSalePage: FC =  () => {
   const { addNotification } = useNotification();
-
+  const [clientinfo, setClientInfo] = useState<ClientConfiguration>();
   const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [packagingUnits, setPackagingUnits] = useState<PackagingUnit[]>([]);
@@ -104,7 +104,18 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
         console.log(err.message || "An error occurred while fetching data.");
       }
     };
-
+    const fetchClientInfo = async () => {
+      try {
+        const response = await fetch("/api/clientconfig");
+        if (!response.ok) {
+          throw new Error(`Error fetching client config: ${response.statusText}`);
+        }
+        const data = await response.json() as unknown as ClientConfiguration;
+        setClientInfo(data);
+      } catch (err) { 
+      } 
+    };
+fetchClientInfo();
     fetchProducts();
     fetchUnits();
   }, []);
@@ -225,7 +236,7 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
           timeout: 5000,
         });
       }
-
+      handlePrintTicket("Receipt");
       const saleItem: ProductSale = await response.json();
       addNotification({
         kind: "success",
@@ -391,7 +402,7 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
     await device.transferOut(1, command); // Send data to the printer
     await device.close();
   }
-  const handlePrint = () => {
+  const handlePrintTicket = (printtype: string) => {
     const printWindow = window.open("", "", "width=800,height=600");
     if (printWindow) {
       printWindow.document.write(`
@@ -445,8 +456,10 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
           <body>
             <div class="container">
               <div class="header">
-                <p>Store Name</p>
-                <p>Receipt</p>
+                <p>${clientinfo ? clientinfo.clientName : "Store Name"}</p>
+                <p>${
+                  printtype == "Ticket" ? "Ticket Print" : "Payment Receipt"
+                }</p>
               </div>
               <div class="section">
                 <div class="section-title">Date</div>
@@ -454,7 +467,7 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
               </div>
               <div class="section">
                 <div class="section-title">Order Number</div>
-                <p>12345</p>
+                <p>1234</p>
               </div>
               <div class="section">
                 <div class="section-title">Customer Name</div>
@@ -490,6 +503,10 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
         </html>
       `);
       printWindow.document.close();
+      printWindow.onafterprint = () => {
+        console.log("Printing completed or canceled");
+        printWindow.close(); // Close the print window after printing
+      };
       printWindow.print();
     }
   };
@@ -983,7 +1000,7 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             <Button
               kind="secondary"
               style={{ flex: 1, minWidth: "48%" }}
-              onClick={() => handlePrint()}
+              onClick={() => handlePrintTicket("Ticket")}
               disabled={items.length <= 0}
             >
               Print
