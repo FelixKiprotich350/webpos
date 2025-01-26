@@ -1,5 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // async headers() {
+  //   return [
+  //     {
+  //       source: "/api/:path*",
+  //       headers: [
+  //         { key: "Access-Control-Allow-Origin", value: "*" }, // Update with specific domains if needed
+  //         {
+  //           key: "Access-Control-Allow-Methods",
+  //           value: "GET, POST, PUT, DELETE",
+  //         },
+  //         {
+  //           key: "Access-Control-Allow-Headers",
+  //           value: "Content-Type, Authorization",
+  //         },
+  //       ],
+  //     },
+  //   ];
+  // },
   // Modify Webpack only if necessary
   webpack: (config, { isServer }) => {
     if (isServer) {
@@ -7,7 +25,7 @@ const nextConfig = {
     }
 
     // Example of modifying Webpack config
-    config.stats = 'verbose'; // Reduce Webpack logs (optional)
+    config.stats = "verbose"; // Reduce Webpack logs (optional)
     return config;
   },
 

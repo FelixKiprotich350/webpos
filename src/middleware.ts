@@ -7,15 +7,14 @@ const PUBLIC_ROUTES = [
   "/api/logout",
   "/api/token",
   "/signing",
-  "/about",
-  "/contacts",
+  "/initialsetup", 
 ];
 
 const STATIC_ASSETS = ["/_next", "/favicon.ico"];
 
 export function middleware(request: NextRequest) {
   const requestPath = request.nextUrl.pathname;
-
+  console.log(request.url);
   // Allow static assets
   if (STATIC_ASSETS.some((route) => requestPath.startsWith(route))) {
     return NextResponse.next();

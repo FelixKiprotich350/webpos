@@ -9,6 +9,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model ClientConfiguration {
+  uuid       String   @id @default(uuid()) // UUID as a unique field
+  clientName String
+  salesTax   Decimal
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 model Person {
   id          Int       @id @default(autoincrement()) // Int as PK
   uuid        String    @unique @default(uuid()) // UUID as a unique field
@@ -42,8 +50,7 @@ model TrtUser {
 }
 
 model Role {
-  id          Int          @id @default(autoincrement()) // Int as PK
-  uuid        String       @unique @default(uuid()) // UUID as a unique field
+  uuid        String       @id @default(uuid()) // UUID as a unique field
   name        String       @unique
   description String?
   users       TrtUser[]

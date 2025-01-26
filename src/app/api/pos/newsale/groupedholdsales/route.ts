@@ -43,6 +43,7 @@ export async function GET(req: Request) {
 
   return NextResponse.json(firstRows);
 }
+
 export async function POST(req: Request) {
   try {
     // Parse the request body

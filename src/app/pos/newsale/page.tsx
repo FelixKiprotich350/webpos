@@ -15,8 +15,14 @@ import {
   IconButton,
   Tile,
   Modal,
+  DataTable,
 } from "@carbon/react";
-import { PackagingUnit, Product, ProductSale } from "@prisma/client";
+import {
+  basketSale,
+  PackagingUnit,
+  Product,
+  ProductSale,
+} from "@prisma/client";
 import styles from "./page.scss";
 import { Money } from "@carbon/icons-react";
 import { TrashCan, Edit } from "@carbon/icons-react";
@@ -28,7 +34,7 @@ import {
   TextInput,
 } from "carbon-components-react";
 import { useNotification } from "app/layoutComponents/notificationProvider";
-import { set } from "lodash";
+import { printDocument } from "lib/printUtil";
 
 interface SellingItem extends Product {
   quantity: number;
@@ -55,13 +61,21 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
   const [showCheckoutModal, setShowCheckoutModal] = useState<boolean>(false);
   const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
   const [showHoldSaleModal, setShowHoldSaleModal] = useState<boolean>(false);
+  const [showRetrieveModal, setShowRetrieveModal] = useState<boolean>(false);
   const [formData, setFormData] = useState<Partial<SellingItem>>();
   const [payments, setTicketPayments] = useState<paymentItem[]>([]);
   const [paymentMode, setPaymentMode] = useState("");
   const [amount, setAmount] = useState(0);
   const [reference, setReference] = useState("");
   const [holdDescription, setHoldDescription] = useState("");
+  const [selectedSale, setSelectedSale] = useState("");
+  const [salesOnHold, setSalesOnHold] = useState<basketSale[]>([]);
+  const [selectedGroupCode, setSelectedGroupCode] = useState<string>("");
 
+  const handleHoldSaleSelection = (sale: string) => {
+    console.log(sale);
+    setSelectedSale(sale); // Set the selected sale
+  };
   // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
@@ -94,6 +108,24 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
     fetchProducts();
     fetchUnits();
   }, []);
+  useEffect(() => {
+    const fetchsalesOnHold = async () => {
+      try {
+        const response = await fetch("/api/pos/newsale/holdsale"); // Replace with your actual API endpoint
+        const data = await response.json();
+        setSalesOnHold(data);
+      } catch (error) {
+        addNotification({
+          title: "Error",
+          subtitle: "Failed to fetch Sales on Hold",
+          kind: "error",
+        });
+      }
+    };
+    if (showRetrieveModal) {
+      fetchsalesOnHold();
+    }
+  }, [showRetrieveModal]);
 
   // Update filtered products based on search term
   useEffect(() => {
@@ -213,36 +245,41 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
       setShowCheckoutModal(false);
     }
   };
-  const handleAddPaymentModal = () => {
+  const handleRetrieveSales = async (group: string) => {
     try {
-      setTicketPayments((prevPayments) => {
-        // Check if a payment with the same mode already exists
-        const exists = prevPayments.some(
-          (payment) => payment.paymentMode === paymentMode
-        );
+      const response = await fetch(`/api/pos/newsale/holdsale/${group}`);
+      const data = (await response.json()) as basketSale[];
+      // Create an array of new items to update the state all at once
+      const newItems = data
+        .map((item) => {
+          const product = products.find(
+            (prod) => prod.uuid === item.productUuid
+          );
+          if (!product) {
+            return null; // If no product found, return null (we'll filter these out later)
+          }
 
-        if (exists) {
-          // Optionally, you can notify the user about the duplicate
-          addNotification({
-            title: "Operation Failed",
-            kind: "warning",
-            subtitle: "Payment mode already exists in the list!",
-          });
-          return prevPayments; // Return the existing array without changes
-        }
+          const quantity = Number(item.quantity);
+          const sellingPrice = Number(product.sellingPrice);
+          const tax = sellingPrice * 0.16; // Assuming 16% tax
+          const total = sellingPrice * quantity + tax; // Add tax to total
 
-        // Add the new payment item if it doesn't exist
-        return [
-          ...prevPayments,
-          { paymentMode: paymentMode, amount: amount, reference: reference },
-        ];
+          return {
+            ...product,
+            quantity,
+            tax,
+            total,
+          };
+        })
+        .filter((item) => item !== null); // Filter out any null entries (missing products)
+      // Update the state with all the new items at once
+      setItems(newItems);
+      const deleteresponse = await fetch(`/api/pos/newsale/holdsale/${group}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
       });
     } catch (error) {
-      console.error("Error adding payment:", error);
-    } finally {
-      setPaymentMode("");
-      setAmount(0);
-      setReference("");
+      console.error("Error retrieving sales on hold:", error);
     }
   };
 
@@ -288,7 +325,174 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
       window.location.reload();
     }
   };
+  const handleAddPaymentModal = () => {
+    try {
+      setTicketPayments((prevPayments) => {
+        // Check if a payment with the same mode already exists
+        const exists = prevPayments.some(
+          (payment) => payment.paymentMode === paymentMode
+        );
+
+        if (exists) {
+          // Optionally, you can notify the user about the duplicate
+          addNotification({
+            title: "Operation Failed",
+            kind: "warning",
+            subtitle: "Payment mode already exists in the list!",
+          });
+          return prevPayments; // Return the existing array without changes
+        }
+
+        // Add the new payment item if it doesn't exist
+        return [
+          ...prevPayments,
+          { paymentMode: paymentMode, amount: amount, reference: reference },
+        ];
+      });
+    } catch (error) {
+      console.error("Error adding payment:", error);
+    } finally {
+      setPaymentMode("");
+      setAmount(0);
+      setReference("");
+    }
+  };
   const { subtotal, totalTax, grandTotal } = calculateSummary();
+  async function printReceiptUsb() {
+    if (!("usb" in navigator)) {
+      addNotification({
+        title: "Error",
+        subtitle: "WebUSB is not supported in this browser.",
+        kind: "error",
+      });
+      return;
+    }
+    const device = await (navigator as any).usb.requestDevice({
+      filters: [{ vendorId: 0x04b8 }], // Replace with your printer's vendorId
+    });
+    await device.open();
+    await device.selectConfiguration(1);
+    await device.claimInterface(0);
+
+    const encoder = new TextEncoder();
+    const printData = `
+      My Store\n
+      123 Main St, City, Country\n
+      Tel: 123-456-7890\n
+      -------------------\n
+      Item 1: $5.00\n
+      Item 2: $3.00\n
+      -------------------\n
+      Total: $8.00\n
+      Thank you for shopping with us!
+    `;
+
+    const command = encoder.encode(printData);
+    await device.transferOut(1, command); // Send data to the printer
+    await device.close();
+  }
+  const handlePrint = () => {
+    const printWindow = window.open("", "", "width=800,height=600");
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <style>
+              body {
+                font-family: 'Courier New', Courier, monospace;
+                width: 80mm;
+                font-size: 14px;
+                line-height: 1.4;
+                margin: 0;
+                padding: 0;
+              }
+              .container {
+                padding: 5mm;
+              }
+              .header {
+                text-align: center;
+                font-size: 18px;
+                font-weight: bold;
+              }
+              .section {
+                margin-bottom: 10px;
+              }
+              .section-title {
+                font-weight: bold;
+              }
+              .items {
+                margin-top: 5px;
+                border-top: 1px solid #000;
+                border-bottom: 1px solid #000;
+                padding-top: 5px;
+                padding-bottom: 5px;
+              }
+              .items div {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 5px;
+              }
+              .footer {
+                text-align: center;
+                margin-top: 10mm;
+                font-size: 12px;
+              }
+              .footer p {
+                margin: 0;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <p>Store Name</p>
+                <p>Receipt</p>
+              </div>
+              <div class="section">
+                <div class="section-title">Date</div>
+                <p>${new Date().toLocaleDateString()}</p>
+              </div>
+              <div class="section">
+                <div class="section-title">Order Number</div>
+                <p>12345</p>
+              </div>
+              <div class="section">
+                <div class="section-title">Customer Name</div>
+                <p>John Doe</p>
+              </div>
+              <div class="section items">
+                ${items
+                  .map(
+                    (item) => `
+                    <div>
+                      <span>${item.name}</span>
+                      <span>${item.quantity} x ${
+                      packagingUnits.find(
+                        (unit) => unit.uuid == item.basicUnitUuid
+                      )?.name
+                    }</span>
+                      <span>$${item.total.toFixed(2)}</span>
+                    </div>`
+                  )
+                  .join("")}
+              </div>
+              <div class="section">
+                <div class="section-title">Total</div>
+                <p>$${items
+                  .reduce((acc, item) => acc + item.total, 0)
+                  .toFixed(2)}</p>
+              </div>
+              <div class="footer">
+                <p>Thank you for shopping with us!</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
 
   return (
     <div
@@ -394,7 +598,7 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
                   <TableCell>
                     <IconButton
                       kind="ghost"
-                      size="small"
+                      size="sm"
                       onClick={() => handleEditItem(item)}
                       renderIcon={Edit}
                     />
@@ -576,6 +780,103 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             </div>
           </Modal>
         )}
+        {showRetrieveModal && (
+          <Modal
+            open={showRetrieveModal}
+            modalHeading={"Retrieve Sale"}
+            primaryButtonText={"Continue"}
+            secondaryButtonText="Cancel"
+            onRequestClose={() => setShowRetrieveModal(false)}
+            primaryButtonDisabled={
+              selectedGroupCode.trim() == "" ||
+              !salesOnHold.find((item) => item.groupCode == selectedGroupCode)
+            } // Disable the button if no sale is selected
+            onRequestSubmit={() => {
+              handleRetrieveSales(selectedGroupCode); // Pass the selected sale to the handler
+              setShowRetrieveModal(false); // Close the modal
+            }}
+            size="lg" // Ensure the modal is large enough
+            hasScrollingContent
+            aria-label="Retrieve Sales"
+          >
+            <div
+              style={{
+                minWidth: "600px",
+                maxHeight: "400px",
+                overflowY: "auto",
+              }}
+            >
+              <h5>
+                <strong>Selected Sale Code : {selectedSale}</strong>
+                <TextInput
+                  id="selectedgroupcode"
+                  labelText=""
+                  onChange={(e: any) => setSelectedGroupCode(e.target.value)}
+                />
+              </h5>
+
+              {salesOnHold.length > 0 ? (
+                <DataTable
+                  rows={salesOnHold.map((sale) => ({
+                    id: sale.id.toString(),
+                    description: sale.description,
+                    date: sale.createdAt,
+                    groupcode: sale.groupCode,
+                    // action: (
+                    //   <IconButton onClick={console.log("clicked me")}>
+                    //     <Edit Size="32" />
+                    //   </IconButton>
+                    // ),
+                  }))}
+                  headers={[
+                    { key: "groupcode", header: "Code" },
+                    { key: "description", header: "Description" },
+                    { key: "date", header: "Date" },
+                    // { key: "action", header: "Action" },
+                  ]}
+                  radio
+                  useZebraStyles
+                  isSortable
+                  onRowClick={(row: any) => console.log(row)}
+                  render={({
+                    rows,
+                    headers,
+                    getRowProps,
+                    getTableProps,
+                  }: {
+                    rows: any[];
+                    headers: any[];
+                    getRowProps: any;
+                    getTableProps: any;
+                  }) => (
+                    <Table {...getTableProps()}>
+                      <TableHead>
+                        <TableRow>
+                          {headers.map((header) => (
+                            <TableHeader key={header.key}>
+                              {header.header}
+                            </TableHeader>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {rows.map((row) => (
+                          <TableRow key={row.id} {...getRowProps({ row })}>
+                            {row.cells.map((cell: any) => (
+                              <TableCell key={cell.id}>{cell.value}</TableCell>
+                            ))}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                />
+              ) : (
+                <p>No sales on hold.</p>
+              )}
+            </div>
+          </Modal>
+        )}
       </div>
 
       {/* Right panel */}
@@ -623,7 +924,7 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
                     <TableCell>
                       <IconButton
                         kind="ghost"
-                        size="small"
+                        size="sm"
                         onClick={() => handleRemoveItem(item)}
                         renderIcon={TrashCan}
                         iconDescription="Remove item"
@@ -657,13 +958,15 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
               kind="secondary"
               style={{ flex: 1, minWidth: "48%" }}
               onClick={() => setShowHoldSaleModal(true)}
+              disabled={items.length <= 0}
             >
               Hold
             </Button>
             <Button
               kind="secondary"
               style={{ flex: 1, minWidth: "48%" }}
-              onClick={() => console.log("Retrieve action...")}
+              onClick={() => setShowRetrieveModal(true)}
+              disabled={items.length > 0}
             >
               Retrieve
             </Button>
@@ -680,7 +983,8 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
             <Button
               kind="secondary"
               style={{ flex: 1, minWidth: "48%" }}
-              onClick={() => console.log("Printing...")}
+              onClick={() => handlePrint()}
+              disabled={items.length <= 0}
             >
               Print
             </Button>
@@ -688,6 +992,7 @@ const NewSalePage: FC<NewSalePageProps> = (props) => {
               kind="secondary"
               style={{ flex: 1, minWidth: "48%" }}
               onClick={() => setShowPaymentModal(true)}
+              disabled={items.length <= 0}
             >
               Pay
             </Button>

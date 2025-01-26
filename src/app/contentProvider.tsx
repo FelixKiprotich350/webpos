@@ -213,9 +213,6 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                   <Link href="/users/roles" passHref legacyBehavior>
                     <SideNavMenuItem>User Roles</SideNavMenuItem>
                   </Link>
-                  <Link href="/users/permissions" passHref legacyBehavior>
-                    <SideNavMenuItem>User Permissions</SideNavMenuItem>
-                  </Link>
                 </SideNavMenu>
                 <SideNavMenu title="Reports">
                   <Link href="/reports" legacyBehavior>

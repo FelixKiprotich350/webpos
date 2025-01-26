@@ -1,4 +1,15 @@
 -- CreateTable
+CREATE TABLE `ClientConfiguration` (
+    `uuid` VARCHAR(191) NOT NULL,
+    `clientName` VARCHAR(191) NOT NULL,
+    `salesTax` DECIMAL(65, 30) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`uuid`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Person` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `uuid` VARCHAR(191) NOT NULL,
@@ -41,16 +52,14 @@ CREATE TABLE `TrtUser` (
 
 -- CreateTable
 CREATE TABLE `Role` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `uuid` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Role_uuid_key`(`uuid`),
     UNIQUE INDEX `Role_name_key`(`name`),
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`uuid`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -103,7 +112,7 @@ CREATE TABLE `Product` (
     `name` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NULL,
     `basicUnitUuid` VARCHAR(191) NOT NULL,
-    `sellingPrice` DOUBLE NOT NULL DEFAULT 1,
+    `sellingPrice` DECIMAL(65, 30) NOT NULL DEFAULT 1,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `categoryUuid` VARCHAR(191) NOT NULL,
@@ -186,6 +195,7 @@ CREATE TABLE `basketSale` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `uuid` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NOT NULL,
+    `groupCode` VARCHAR(191) NOT NULL,
     `productUuid` VARCHAR(191) NOT NULL,
     `quantity` DECIMAL(65, 30) NOT NULL,
     `price` DECIMAL(65, 30) NOT NULL,
@@ -206,7 +216,7 @@ CREATE TABLE `SalesPayments` (
     `uuid` VARCHAR(191) NOT NULL,
     `salesMasterCode` VARCHAR(191) NOT NULL,
     `paymentMode` VARCHAR(191) NOT NULL,
-    `amountPaid` DOUBLE NOT NULL,
+    `amountPaid` DECIMAL(65, 30) NOT NULL,
     `refference` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -218,7 +228,7 @@ CREATE TABLE `SalesPayments` (
 -- CreateTable
 CREATE TABLE `_PermissionToRole` (
     `A` INTEGER NOT NULL,
-    `B` INTEGER NOT NULL,
+    `B` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `_PermissionToRole_AB_unique`(`A`, `B`),
     INDEX `_PermissionToRole_B_index`(`B`)
@@ -255,4 +265,4 @@ ALTER TABLE `SalesPayments` ADD CONSTRAINT `SalesPayments_salesMasterCode_fkey` 
 ALTER TABLE `_PermissionToRole` ADD CONSTRAINT `_PermissionToRole_A_fkey` FOREIGN KEY (`A`) REFERENCES `Permission`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_PermissionToRole` ADD CONSTRAINT `_PermissionToRole_B_fkey` FOREIGN KEY (`B`) REFERENCES `Role`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `_PermissionToRole` ADD CONSTRAINT `_PermissionToRole_B_fkey` FOREIGN KEY (`B`) REFERENCES `Role`(`uuid`) ON DELETE CASCADE ON UPDATE CASCADE;
