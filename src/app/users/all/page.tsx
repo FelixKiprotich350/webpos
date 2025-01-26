@@ -15,7 +15,7 @@ interface TrtUser extends user {
   Person: Person;
   Role: Role;
 }
-const UserManagement: FC = () => {
+export default function UserManagement() {
   const [users, setUsers] = useState<TrtUser[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,9 +71,7 @@ const UserManagement: FC = () => {
                   <TableCell>
                     {user.Person?.firstName} {user.Person?.lastName}
                   </TableCell>
-                  <TableCell>
-                    {user.Person?.gender}
-                  </TableCell>
+                  <TableCell>{user.Person?.gender}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.Role?.name}</TableCell>
                   <TableCell>{user.status}</TableCell>
@@ -85,6 +83,4 @@ const UserManagement: FC = () => {
       )}
     </div>
   );
-};
-
-export default UserManagement;
+}

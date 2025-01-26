@@ -20,7 +20,7 @@ interface ProductPrice {
   price: number;
 }
 
-export const ProductPrices: FC = () => {
+export default function ProductPrices() {
   const [products, setProducts] = useState<ProductPrice[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -78,6 +78,4 @@ export const ProductPrices: FC = () => {
       </TableContainer>
     </div>
   );
-};
-
-export default ProductPrices;
+}

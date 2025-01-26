@@ -22,7 +22,7 @@ interface PackagingUnit {
   countable: boolean;
 }
 
-const PackagingUnits: FC = () => {
+export default function PackagingUnits() {
   const [units, setUnits] = useState<PackagingUnit[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -192,7 +192,9 @@ const PackagingUnits: FC = () => {
       {showModal && (
         <Modal
           open={showModal}
-          modalHeading={editUnit ? "Edit Packaging Unit" : "Add New Packaging Unit"}
+          modalHeading={
+            editUnit ? "Edit Packaging Unit" : "Add New Packaging Unit"
+          }
           primaryButtonText={editUnit ? "Save Changes" : "Add Unit"}
           secondaryButtonText="Cancel"
           onRequestClose={closeModal}
@@ -219,6 +221,4 @@ const PackagingUnits: FC = () => {
       )}
     </div>
   );
-};
-
-export default PackagingUnits;
+}

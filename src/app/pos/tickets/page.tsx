@@ -14,7 +14,7 @@ import {
 import { basketSale } from "@prisma/client";
 
 // Pending Tickets Component
-const PendingTickets: FC = () => {
+export default function PendingTickets() {
   const [tickets, setTickets] = useState<basketSale[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -79,6 +79,4 @@ const PendingTickets: FC = () => {
       </TableContainer>
     </div>
   );
-};
-
-export default PendingTickets;
+}

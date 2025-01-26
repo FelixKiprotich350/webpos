@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         personUuid: person.uuid, // Referencing the created person via uuid
         email: email,
         passwordHash: await hashPassword(password),
-        roleId: 0, // Default role ID
+        roleUuid: "",
       },
     });
 

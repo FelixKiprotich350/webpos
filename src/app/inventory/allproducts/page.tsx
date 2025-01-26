@@ -24,7 +24,7 @@ interface ProductModel extends Product {
   PackagingUnit?: PackagingUnit;
 }
 
-const InventoryItems: FC = () => {
+export default function InventoryItems() {
   const { addNotification } = useNotification();
 
   const [inventory, setInventory] = useState<ProductModel[]>([]);
@@ -344,6 +344,4 @@ const InventoryItems: FC = () => {
       )}
     </div>
   );
-};
-
-export default InventoryItems;
+}

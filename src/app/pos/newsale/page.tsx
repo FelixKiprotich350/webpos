@@ -42,14 +42,14 @@ interface SellingItem extends Product {
   tax: number;
   total: number;
 }
- 
+
 interface paymentItem {
   paymentMode: string;
   amount: number;
   reference: string;
 }
 
-const NewSalePage: FC =  () => {
+export default function NewSalePage() {
   const { addNotification } = useNotification();
   const [clientinfo, setClientInfo] = useState<ClientConfiguration>();
   const [searchTerm, setSearchTerm] = useState("");
@@ -108,14 +108,15 @@ const NewSalePage: FC =  () => {
       try {
         const response = await fetch("/api/clientconfig");
         if (!response.ok) {
-          throw new Error(`Error fetching client config: ${response.statusText}`);
+          throw new Error(
+            `Error fetching client config: ${response.statusText}`
+          );
         }
-        const data = await response.json() as unknown as ClientConfiguration;
+        const data = (await response.json()) as unknown as ClientConfiguration;
         setClientInfo(data);
-      } catch (err) { 
-      } 
+      } catch (err) {}
     };
-fetchClientInfo();
+    fetchClientInfo();
     fetchProducts();
     fetchUnits();
   }, []);
@@ -1035,6 +1036,4 @@ fetchClientInfo();
       </div>
     </div>
   );
-};
-
-export default NewSalePage;
+}

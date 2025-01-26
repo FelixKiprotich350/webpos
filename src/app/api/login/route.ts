@@ -7,7 +7,6 @@ import { hashPassword, verifyPassword } from "../../../lib/password";
 
 const prisma = new PrismaClient();
 
-
 //interfaces
 type LoginCredentials = {
   email: string;
@@ -21,7 +20,7 @@ export async function POST(request: Request) {
     // Find the user by email
     const user = await prisma.trtUser.findUnique({
       where: { email },
-      include: { person: true },
+      include: { Person: true },
     });
     if (!user) {
       return NextResponse.json(
@@ -44,7 +43,7 @@ export async function POST(request: Request) {
 
     // Generate a JWT token
     const token = generateToken({ id: user.uuid, email: user.email });
-    let userDetails = { name: user.person?.firstName, email: user.email };
+    let userDetails = { name: user.Person?.firstName, email: user.email };
 
     // Send the token in a secure HTTP-only cookie
     const response = NextResponse.json({
@@ -61,8 +60,7 @@ export async function POST(request: Request) {
     return response;
   } catch (error) {
     return NextResponse.json({ error: error }, { status: 500 });
+  } finally {
+    prisma.$disconnect();
   }
-  finally{
-      prisma.$disconnect();
-    }
 }

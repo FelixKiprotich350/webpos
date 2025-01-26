@@ -21,7 +21,7 @@ interface Category {
   description: string;
 }
 
-export const ProductCategories: FC = () => {
+export default function ProductCategories () {
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -223,4 +223,3 @@ export const ProductCategories: FC = () => {
   );
 };
 
-export default ProductCategories;

@@ -120,7 +120,7 @@ interface SellingItem extends Product {
 //     prisma.$disconnect();
 //   }
 // }
-export function generateSaleNumber(): string {
+function generateSaleNumber(): string {
   const timestamp = Math.floor(Date.now() / 1000); // Get current Unix timestamp in seconds
   return `S-${timestamp}`;
 }
@@ -168,7 +168,7 @@ export async function POST(req: Request) {
               quantity: product.quantity,
               price: product.sellingPrice,
               taxPercentage: product.tax,
-              paymentStatus: isFullyPaid ? 'PAID':"PENDING",
+              paymentStatus: isFullyPaid ? "PAID" : "PENDING",
               userUuid: "Felix",
               packingUnitUuid: product.basicUnitUuid,
             },

@@ -1,14 +1,9 @@
 "use client";
 
 import React, { FC, useState } from "react";
-import {
-  Button,
-  NumberInput,
-  TextInput
-} from "@carbon/react"; 
+import { Button, NumberInput, TextInput } from "@carbon/react";
 
-
-const InitialSetup: FC = () => {
+export default function InitialSetup() {
   const [clientname, setClientName] = useState<string>("");
   const [salestax, setSalesTax] = useState<Number>(1);
 
@@ -43,11 +38,11 @@ const InitialSetup: FC = () => {
         value={salestax}
         onChange={(e: any) => handletaxchange(e?.target?.value)}
         style={{ marginBottom: "1rem" }}
-        min="1" 
+        min="1"
       />
-      <Button kind="primary" onClick={() => { }}>Save Configuration</Button>
+      <Button kind="primary" onClick={() => {}}>
+        Save Configuration
+      </Button>
     </div>
   );
-};
-
-export default InitialSetup;
+}

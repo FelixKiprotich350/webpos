@@ -33,7 +33,7 @@ interface DashboardStatistics {
   totalUsers: number;
 }
 
-const Dashboard: FC = () => {
+export default function Dashboard() {
   const { addNotification } = useNotification();
   const [dashboardData, setDashboardData] = useState<DashboardStatistics>({
     topSellingProducts: [],
@@ -150,6 +150,4 @@ const Dashboard: FC = () => {
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}

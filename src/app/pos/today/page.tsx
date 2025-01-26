@@ -18,7 +18,7 @@ interface ExtendedSaleItem extends ProductSale {
 }
 
 // Todays Sales Component
-const TodaysSales: FC = () => {
+export default function TodaysSales() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   const [sales, setSales] = useState<ExtendedSaleItem[]>([]);
@@ -115,6 +115,4 @@ const TodaysSales: FC = () => {
       )}
     </div>
   );
-};
-
-export default TodaysSales;
+}

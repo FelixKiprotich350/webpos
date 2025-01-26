@@ -12,7 +12,7 @@ import {
 } from "@carbon/react";
 import { Person, Role, TrtUser as user } from "@prisma/client";
 
-const RoleManagement: FC = () => {
+export default function RoleManagement() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +70,4 @@ const RoleManagement: FC = () => {
       )}
     </div>
   );
-};
-
-export default RoleManagement;
+}

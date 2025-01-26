@@ -27,7 +27,7 @@ interface Category {
   description: string;
 }
 
-const Reports: FC = () => {
+export default function  Reports() {
   const [reportType, setReportType] = useState("sales");
   const [reports, setReports] = useState<Report[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -161,4 +161,3 @@ const Reports: FC = () => {
   );
 };
 
-export default Reports;

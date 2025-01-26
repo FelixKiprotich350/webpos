@@ -15,7 +15,7 @@ import {
 } from "@carbon/react";
 import { useRouter } from "next/navigation";
 
-const LoginComponent: React.FC = () => {
+export default function LoginComponent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -95,7 +95,6 @@ const LoginComponent: React.FC = () => {
           password: password,
           firstname: firstname,
           lastname: lastname,
-          
         }),
       });
 
@@ -316,6 +315,4 @@ const LoginComponent: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default LoginComponent;
+}
