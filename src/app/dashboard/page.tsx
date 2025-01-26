@@ -1,85 +1,153 @@
-'use client';
+"use client";
 
-import React, { FC } from "react";
-import { Grid, Row, Column, Tile } from "@carbon/react";
-import { Fade } from '@carbon/icons-react';
-import './page.css'; // Carbon's default styles are automatically applied.
+import { FC, useEffect, useState } from "react";
+import {
+  Table,
+  TableHead,
+  TableRow,
+  TableHeader,
+  TableBody,
+  TableCell,
+  TableContainer,
+  IconButton,
+  Tile,
+} from "@carbon/react";
+import { PackagingUnit, Product } from "@prisma/client";
+import { Edit, Money, ShoppingCart, Box, User } from "@carbon/icons-react";
+import { useNotification } from "app/layoutComponents/notificationProvider";
 
-export const Dashboard: FC = () => {
-  const data = {
-    totalSales: 5000,
-    totalProducts: 120,
-    totalCategories: 15,
-    totalUsers: 10,
-    pendingTickets: 8,
-    totalTransactions: 120,
-  };
+interface TopSellingProduct {
+  id: number;
+  productUuid: string;
+  name: string;
+  basicUnitUuid: string;
+  categoryUuid: string;
+  totalSold: number;
+}
+
+interface DashboardStatistics {
+  topSellingProducts: Array<TopSellingProduct>;
+  totalSales: number;
+  totalTransactions: number;
+  totalProducts: number;
+  totalUsers: number;
+}
+
+const Dashboard: FC = () => {
+  const { addNotification } = useNotification();
+  const [dashboardData, setDashboardData] = useState<DashboardStatistics>({
+    topSellingProducts: [],
+    totalProducts: 0,
+    totalSales: 0,
+    totalTransactions: 0,
+    totalUsers: 0,
+  });
+
+  // Fetch data from APIs
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        const response = await fetch("/api/dashboard");
+        const data = await response.json();
+        setDashboardData(data);
+      } catch (error) {
+        addNotification({
+          title: "Error",
+          subtitle: "Failed to fetch products",
+          kind: "error",
+        });
+      }
+    };
+
+    fetchStatistics();
+  }, []);
 
   return (
-    <div className="bx--grid bx--grid--full-width">
-      <h3 className="bx--text-align--center bx--type--heading-3 bx--type--bold">Dashboard Summary</h3>
-      <Grid className="bx--grid--full-width">
-        {/* First Row */}
-        <Row>
-          <Column sm={12} md={6} lg={4}>
-            <Tile className="bx--tile bx--tile--bordered bx--tile--interactive dashboard-tile">
-              <div className="tile-icon">
-                <Fade />
-              </div>
+    <div
+      style={{
+        display: "flex",
+        height: "calc(100vh - 55px)",
+        overflow: "hidden",
+      }}
+    >
+      {/* Left Column */}
+      <div style={{ flex: 1, padding: "1rem", overflowY: "auto" }}>
+        <TableContainer title="Top 10 Selling Items">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Name</TableHeader>
+                <TableHeader>Selling Unit</TableHeader>
+                <TableHeader>Category</TableHeader>
+                <TableHeader>Total Sold</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {dashboardData.topSellingProducts.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.basicUnitUuid}</TableCell>
+                  <TableCell>{item.categoryUuid}</TableCell>
+                  <TableCell>{item.totalSold}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </div>
+
+      {/* Right Column */}
+      <div
+        style={{
+          flex: 1,
+          padding: "1rem",
+          borderLeft: "1px solid #e0e0e0",
+          overflowY: "auto",
+        }}
+      >
+        <h3>Dashboard Statistics</h3>
+        <div style={{ display: "grid", gap: "1rem" }}>
+          <Tile
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+          >
+            <Money size={32} />
+            <div>
               <h4>Total Sales</h4>
-              <p className="bx--type--body-strong">${data.totalSales.toLocaleString()}</p>
-            </Tile>
-          </Column>
-          <Column sm={12} md={6} lg={4}>
-            <Tile className="bx--tile bx--tile--bordered bx--tile--interactive dashboard-tile">
-              <div className="tile-icon">
-                <Fade />
-              </div>
-              <h4>Total Products</h4>
-              <p className="bx--type--body-strong">{data.totalProducts}</p>
-            </Tile>
-          </Column>
-          <Column sm={12} md={6} lg={4}>
-            <Tile className="bx--tile bx--tile--bordered bx--tile--interactive dashboard-tile">
-              <div className="tile-icon">
-                <Fade />
-              </div>
-              <h4>Total Categories</h4>
-              <p className="bx--type--body-strong">{data.totalCategories}</p>
-            </Tile>
-          </Column>
-        </Row>
-        {/* Second Row */}
-        <Row>
-          <Column sm={12} md={6} lg={4}>
-            <Tile className="bx--tile bx--tile--bordered bx--tile--interactive dashboard-tile">
-              <div className="tile-icon">
-                <Fade />
-              </div>
-              <h4>Total Users</h4>
-              <p className="bx--type--body-strong">{data.totalUsers}</p>
-            </Tile>
-          </Column>
-          <Column sm={12} md={6} lg={4}>
-            <Tile className="bx--tile bx--tile--bordered bx--tile--interactive dashboard-tile">
-              <div className="tile-icon">
-                <Fade />
-              </div>
-              <h4>Pending Tickets</h4>
-              <p className="bx--type--body-strong">{data.pendingTickets}</p>
-            </Tile>
-          </Column>
-          <Column sm={12} md={6} lg={4}>
-            <Tile className="bx--tile bx--tile--bordered bx--tile--interactive dashboard-tile">
-              <div className="tile-icon">
-                <Fade />
-              </div>
+              <strong>Ksh {dashboardData.totalSales.toFixed(2)}</strong>
+            </div>
+          </Tile>
+
+          <Tile
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+          >
+            <ShoppingCart size={32} />
+            <div>
               <h4>Total Transactions</h4>
-              <p className="bx--type--body-strong">{data.totalTransactions}</p>
-            </Tile>
-          </Column>
-        </Row>
-      </Grid>
+              <strong>{dashboardData.totalTransactions}</strong>
+            </div>
+          </Tile>
+
+          <Tile
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+          >
+            <Box size={32} />
+            <div>
+              <h4>Total Products</h4>
+              <strong>{dashboardData.totalProducts}</strong>
+            </div>
+          </Tile>
+
+          <Tile
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+          >
+            <User size={32} />
+            <div>
+              <h4>Total Users</h4>
+              <strong>{dashboardData.totalUsers}</strong>
+            </div>
+          </Tile>
+        </div>
+      </div>
     </div>
   );
 };
