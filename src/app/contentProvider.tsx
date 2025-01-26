@@ -183,7 +183,7 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                     <SideNavMenuItem>New Sale</SideNavMenuItem>
                   </Link>
                   <Link href="/pos/tickets" passHref legacyBehavior>
-                    <SideNavMenuItem>Pending Tickets</SideNavMenuItem>
+                    <SideNavMenuItem>Tickets on Hold</SideNavMenuItem>
                   </Link>
                   <Link href="/pos/today" passHref legacyBehavior>
                     <SideNavMenuItem>Today's Sales</SideNavMenuItem>

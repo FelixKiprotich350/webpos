@@ -78,7 +78,7 @@ const TodaysSales: FC = () => {
       ) : (
         <>
           <p>
-            <strong>Total Sales:</strong> ${Number(totalSales).toFixed(2)}
+            <strong>Total Sales:</strong> Ksh {Number(totalSales).toFixed(2)}
           </p>
           <TableContainer title="Sales Details">
             <Table>

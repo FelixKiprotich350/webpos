@@ -180,6 +180,7 @@ model basketSale {
   id                  Int      @id @default(autoincrement())
   uuid                String   @unique @default(uuid()) // UUID as a unique field
   description         String
+  groupCode           String
   productUuid         String
   product             Product  @relation(fields: [productUuid], references: [uuid])
   quantity            Decimal

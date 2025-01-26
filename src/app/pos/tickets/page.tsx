@@ -11,35 +11,26 @@ import {
   Button,
   TextInput,
 } from "@carbon/react";
-
-interface Ticket {
-  id: string;
-  createdAt: string;
-  total: number;
-  status: string;
-}
+import { basketSale } from "@prisma/client";
 
 // Pending Tickets Component
 const PendingTickets: FC = () => {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [tickets, setTickets] = useState<basketSale[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    // Fetch tickets (mocked here for simplicity)
-    setTickets([
-      {
-        id: "T001",
-        createdAt: "2025-01-21T10:00:00Z",
-        total: 200,
-        status: "Pending",
-      },
-      {
-        id: "T002",
-        createdAt: "2025-01-21T11:00:00Z",
-        total: 300,
-        status: "Pending",
-      },
-    ]);
+    const fetchTickets = async () => {
+      try {
+        const response = await fetch("/api/pos/newsale/holdsale"); // Replace with your API endpoint
+        if (!response.ok) throw new Error("Failed to fetch tickets");
+        const data = await response.json();
+        setTickets(data);
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
+      }
+    };
+
+    fetchTickets();
   }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +39,8 @@ const PendingTickets: FC = () => {
 
   const filteredTickets = tickets.filter(
     (ticket) =>
-      ticket.id.includes(searchTerm) || ticket.status.includes(searchTerm)
+      ticket.description.includes(searchTerm) ||
+      ticket.groupCode.includes(searchTerm)
   );
 
   return (
@@ -61,39 +53,24 @@ const PendingTickets: FC = () => {
         onChange={handleSearchChange}
         style={{ marginBottom: "1rem", width: "100%" }}
       />
-      <TableContainer title="Pending Tickets">
+      <TableContainer title="Tickets on Hold">
         <Table>
           <TableHead>
             <TableRow>
               <TableHeader>ID</TableHeader>
+              <TableHeader>Code</TableHeader>
+              <TableHeader>Description</TableHeader>
               <TableHeader>Created At</TableHeader>
-              <TableHeader>Total</TableHeader>
-              <TableHeader>Status</TableHeader>
-              <TableHeader>Actions</TableHeader>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredTickets.map((ticket) => (
               <TableRow key={ticket.id}>
                 <TableCell>{ticket.id}</TableCell>
+                <TableCell>{ticket.groupCode}</TableCell>
+                <TableCell>{ticket.description}</TableCell>
                 <TableCell>
                   {new Date(ticket.createdAt).toLocaleString()}
-                </TableCell>
-                <TableCell>${ticket.total.toFixed(2)}</TableCell>
-                <TableCell>{ticket.status}</TableCell>
-                <TableCell>
-                  <Button
-                    kind="tertiary"
-                    onClick={() => console.log("Viewing", ticket.id)}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    kind="danger"
-                    onClick={() => console.log("Deleting", ticket.id)}
-                  >
-                    Delete
-                  </Button>
                 </TableCell>
               </TableRow>
             ))}
