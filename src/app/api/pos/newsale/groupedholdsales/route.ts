@@ -11,7 +11,7 @@ interface SellingItem extends Product {
   total: number;
 }
 
-export function generateSaleNumber(): string {
+function generateSaleNumber(): string {
   const timestamp = Math.floor(Date.now() / 1000); // Get current Unix timestamp in seconds
   return `S-${timestamp}`;
 }

@@ -9,76 +9,82 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  Button,
-  TextInput,
-  Select,
-  SelectItem,
-  Modal,
-  FormGroup,
 } from "@carbon/react";
-
-// User Management Component
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  status: string;
+import { Person, Role, TrtUser as user } from "@prisma/client";
+interface TrtUser extends user {
+  Person: Person;
+  Role: Role;
 }
-
- const UserManagement: FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
+const UserManagement: FC = () => {
+  const [users, setUsers] = useState<TrtUser[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch users (mocked here for simplicity)
-    setUsers([
-      {
-        id: "U001",
-        name: "User 1",
-        email: "user1@example.com",
-        role: "Admin",
-        status: "Active",
-      },
-      {
-        id: "U002",
-        name: "User 2",
-        email: "user2@example.com",
-        role: "Cashier",
-        status: "Inactive",
-      },
-    ]);
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true);
+        setError(null); // Reset error before a new fetch
+
+        const response = await fetch("/api/users/all"); // Replace with your actual API endpoint
+        if (!response.ok) {
+          throw new Error(`Failed to fetch users: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setUsers(data); // Assume the API returns a list of users
+      } catch (err: any) {
+        setError(err.message || "Something went wrong.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
   return (
     <div>
       <h3>User Management</h3>
-      <TableContainer title="User List">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableHeader>ID</TableHeader>
-              <TableHeader>Name</TableHeader>
-              <TableHeader>Email</TableHeader>
-              <TableHeader>Role</TableHeader>
-              <TableHeader>Status</TableHeader>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.id}</TableCell>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>{user.status}</TableCell>
+
+      {isLoading ? (
+        <p>Loading users...</p>
+      ) : error ? (
+        <p>Error: {error}</p>
+      ) : (
+        <TableContainer title="User List">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>ID</TableHeader>
+                <TableHeader>Name</TableHeader>
+                <TableHeader>Gender</TableHeader>
+                <TableHeader>Email</TableHeader>
+                <TableHeader>Role</TableHeader>
+                <TableHeader>Status</TableHeader>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.id}</TableCell>
+                  <TableCell>
+                    {user.Person?.firstName} {user.Person?.lastName}
+                  </TableCell>
+                  <TableCell>
+                    {user.Person?.gender}
+                  </TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.Role?.name}</TableCell>
+                  <TableCell>{user.status}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </div>
   );
 };
-
 
 export default UserManagement;
