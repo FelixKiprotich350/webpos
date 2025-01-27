@@ -5,8 +5,6 @@ import { v4 as uuidv4 } from "uuid";
 
 const prisma = new PrismaClient();
 
- 
-
 function generateSaleNumber(): string {
   const timestamp = Math.floor(Date.now() / 1000); // Get current Unix timestamp in seconds
   return `S-${timestamp}`;
@@ -27,6 +25,10 @@ export async function GET(
   const user = await prisma.trtUser.findFirst({
     where: {
       uuid: uuid,
+    },
+    include: {
+      Person: true,
+      Role: true,
     },
   });
 

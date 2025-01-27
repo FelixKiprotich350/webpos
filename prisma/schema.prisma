@@ -35,18 +35,19 @@ model Person {
 }
 
 model TrtUser {
-  id           Int      @id @default(autoincrement()) // Int as PK
-  uuid         String   @unique @default(uuid()) // UUID as a unique field
-  username     String   @unique
-  email        String   @unique
-  status       String   @default("ACTIVE")
-  passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  Person       Person   @relation(fields: [personUuid], references: [uuid])
-  personUuid   String   @unique //fk to person uuid
-  Role         Role?    @relation(fields: [roleUuid], references: [uuid])
-  roleUuid     String?
+  id             Int      @id @default(autoincrement()) // Int as PK
+  uuid           String   @unique @default(uuid()) // UUID as a unique field
+  username       String   @unique
+  email          String   @unique
+  loginStatus    String   @default("ACTIVE")
+  approvalStatus String   @default("PENDING")
+  passwordHash   String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  Person         Person   @relation(fields: [personUuid], references: [uuid])
+  personUuid     String   @unique //fk to person uuid
+  Role           Role?    @relation(fields: [roleUuid], references: [uuid])
+  roleUuid       String?
 }
 
 model Role {

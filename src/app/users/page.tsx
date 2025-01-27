@@ -9,8 +9,8 @@ import {
   TableBody,
   TableCell,
   TableContainer,
+  Link,
 } from "@carbon/react";
-import { Person, Role, TrtUser as user } from "@prisma/client";
 import {useFetchUsers} from "../hooks/useFetchUsers";
 
 
@@ -38,7 +38,9 @@ export default function UserManagement() {
                 <TableHeader>Gender</TableHeader>
                 <TableHeader>Email</TableHeader>
                 <TableHeader>Role</TableHeader>
-                <TableHeader>Status</TableHeader>
+                <TableHeader>Login Status</TableHeader>
+                <TableHeader>Approval Status</TableHeader>
+                <TableHeader>Details</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -51,7 +53,13 @@ export default function UserManagement() {
                   <TableCell>{user.Person?.gender}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.Role?.name}</TableCell>
-                  <TableCell>{user.status}</TableCell>
+                  <TableCell>{user.loginStatus}</TableCell>
+                  <TableCell>{user.approvalStatus}</TableCell>
+                  <TableCell>
+                    <Link href={`/users/${user.uuid}`}>
+                      <a style={{ color: "#0f62fe", textDecoration: "underline" }}>View User</a>
+                    </Link>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

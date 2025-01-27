@@ -206,10 +206,7 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                 <SideNavMenu title="User Management">
                   <Link href="/users/all" passHref legacyBehavior>
                     <SideNavMenuItem>Users List</SideNavMenuItem>
-                  </Link>
-                  <Link href="/users/manage" passHref legacyBehavior>
-                    <SideNavMenuItem>Manage User</SideNavMenuItem>
-                  </Link>
+                  </Link> 
                   <Link href="/users/roles" passHref legacyBehavior>
                     <SideNavMenuItem>User Roles</SideNavMenuItem>
                   </Link>
