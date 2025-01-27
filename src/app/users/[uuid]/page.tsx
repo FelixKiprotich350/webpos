@@ -21,7 +21,7 @@ export default function UserDetailsPage() {
     const fetchUser = async () => {
       try {
         setIsLoading(true);
-        setError(null); // Reset error before a new fetch
+        setError(null); 
 
         const response = await fetch(`/api/users/${uuid}`);
         if (!response.ok) {
