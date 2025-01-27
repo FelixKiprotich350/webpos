@@ -11,46 +11,23 @@ import {
   TableContainer,
 } from "@carbon/react";
 import { Person, Role, TrtUser as user } from "@prisma/client";
-interface TrtUser extends user {
-  Person: Person;
-  Role: Role;
-}
-export default function UserManagement() {
-  const [users, setUsers] = useState<TrtUser[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+import {useFetchUsers} from "../hooks/useFetchUsers";
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        setError(null); // Reset error before a new fetch
 
-        const response = await fetch("/api/users/all"); // Replace with your actual API endpoint
-        if (!response.ok) {
-          throw new Error(`Failed to fetch users: ${response.statusText}`);
-        }
 
-        const data = await response.json();
-        setUsers(data); // Assume the API returns a list of users
-      } catch (err: any) {
-        setError(err.message || "Something went wrong.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+export default function UserManagement() { 
+  const { users, isLoading, error } = useFetchUsers();
 
-    fetchUsers();
-  }, []);
+
 
   return (
     <div>
       <h3>User Management</h3>
 
       {isLoading ? (
-        <p>Loading users...</p>
+        <p aria-live="polite">Loading users...</p>
       ) : error ? (
-        <p>Error: {error}</p>
+        <p aria-live="polite">Error: {error}</p>
       ) : (
         <TableContainer title="User List">
           <Table>
