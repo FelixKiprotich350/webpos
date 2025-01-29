@@ -94,21 +94,18 @@ model Supplier {
   updatedAt  DateTime @updatedAt
 }
 
-// model Supply {
-//   id                  Int              @id @default(autoincrement())
-//   uuid                String           @unique @default(uuid()) // UUID as a unique field
-//   productUuid         String
-//   product             Product          @relation(fields: [productUuid], references: [uuid])
-//   supplierUuid        String
-//   supplier            Supplier         @relation(fields: [supplierUuid], references: [uuid])
-//   quantity            Decimal
-//   receivedAt          DateTime         @default(now())
-//   userUuid            String
-//   createdAt           DateTime         @default(now())
-//   updatedAt           DateTime         @updatedAt
-//   ProductPackUnit     ProductPackUnit? @relation(fields: [productPackUnitUuid], references: [uuid])
-//   productPackUnitUuid String?
-// }
+model StockReceived {
+  id                  Int             @id @default(autoincrement())
+  uuid                String          @unique @default(uuid()) // UUID as a unique field
+  productUuid         String
+  product             Product         @relation(fields: [productUuid], references: [uuid])
+  quantity            Decimal
+  receivedAt          DateTime        @default(now())
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  ProductPackUnit     ProductPackUnit @relation(fields: [productPackUnitUuid], references: [uuid])
+  productPackUnitUuid String
+}
 
 model Product {
   id            Int      @id @default(autoincrement())
@@ -122,9 +119,10 @@ model Product {
 
   Sales         ProductSale[]
   categoryUuid  String // Foreign key for the category
-  Category      Category      @relation(fields: [categoryUuid], references: [uuid]) // Enforce relationship
-  PackagingUnit PackagingUnit @relation(fields: [basicUnitUuid], references: [uuid])
+  Category      Category        @relation(fields: [categoryUuid], references: [uuid]) // Enforce relationship
+  PackagingUnit PackagingUnit   @relation(fields: [basicUnitUuid], references: [uuid])
   basketSale    basketSale[]
+  StockReceived StockReceived[]
 }
 
 model Category {
@@ -138,23 +136,24 @@ model Category {
 }
 
 model PackagingUnit {
-  id              Int               @id @default(autoincrement())
-  uuid            String            @unique @default(uuid()) // UUID as a unique field
-  name            String
-  countable       Boolean
-  Products        Product[] // One-to-many relationship with Product
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt 
+  id        Int       @id @default(autoincrement())
+  uuid      String    @unique @default(uuid()) // UUID as a unique field
+  name      String
+  countable Boolean
+  Products  Product[] // One-to-many relationship with Product
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model ProductPackUnit {
-  id              Int            @id @default(autoincrement())
-  uuid            String         @unique @default(uuid()) // UUID as a unique field
-  productUuid     String
-  unitFactor      Decimal
-  packUnitUuid    String
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id            Int             @id @default(autoincrement())
+  uuid          String          @unique @default(uuid()) // UUID as a unique field
+  productUuid   String
+  unitFactor    Decimal
+  packUnitUuid  String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  StockReceived StockReceived[]
 }
 
 ///sales modesls

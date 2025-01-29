@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "secret_key"; // Use environment variables in production
-const JWT_EXPIRES_IN = "2m"; // Adjust expiration time as needed
+const JWT_SECRET = process.env.JWT_SECRET!; // Use environment variables in production
+const JWT_EXPIRES_IN = "300"; // Adjust expiration time as needed
 
 export function generateToken(payload: object): string {
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });  

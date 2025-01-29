@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../../../lib/password";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient({
   log: ["query", "info", "warn", "error"],
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
         },
       });
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create TrtUser with the person's UUID
     const user = await prisma.trtUser.create({

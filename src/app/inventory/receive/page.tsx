@@ -62,35 +62,45 @@ export default function ProductPrices() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedProduct || !unit) return; // Ensure unit is selected
 
     const payload = {
-      productId: selectedProduct.id,
+      productUuid: selectedProduct.uuid,
       quantity: parseFloat(quantity),
-      unit: unit.uuid,
+      productPackUnitUuid: unit.uuid,
     };
 
-    fetch("/api/inventory/products/receive", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        addNotification({
-          kind: "success",
-          title: "Operation Completed",
-          subtitle: "Stock Received successfully",
-          timeout: 5000,
-        });
-        setIsModalOpen(false);
-        setQuantity("");
-        setUnit(null); // Reset unit after submission
-      })
-      .catch((err) => console.error("Error submitting:", err));
+    try {
+      const response = await fetch(`/api/inventory/products/${selectedProduct.uuid}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to receive stock");
+      }
+
+      addNotification({
+        kind: "success",
+        title: "Operation Completed",
+        subtitle: "Stock received successfully",
+        timeout: 5000,
+      });
+
+      setIsModalOpen(false);
+      setQuantity("");
+      setUnit(null);
+    } catch (error: any) {
+      console.error("Error:", error);
+      addNotification({
+        kind: "error",
+        title: "Operation Failed",
+        subtitle: error?.message || "An error occurred",
+        timeout: 5000,
+      });
+    }
   };
 
   const filteredProducts = products.filter(

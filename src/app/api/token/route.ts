@@ -1,19 +1,21 @@
 import { NextResponse } from "next/server";
-import { verifyToken } from "../../../lib/jwt";
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
+import { USER_TOKEN } from "lib/constants";
 
-export async function GET(request: Request) {
-  const token = request.headers.get("cookie")?.split("authToken=")[1]?.split(";")[0];
+const SECRET_KEY = process.env.JWT_SECRET!; // Ensure you have this in your .env file
 
-  if (!token) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
+export async function GET() {
+  try {
+    const token = cookies().get(USER_TOKEN)?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const decoded = verifyToken(token);
-
-  if (!decoded) {
+    // Verify token
+    const decoded = jwt.verify(token, SECRET_KEY);
+    return NextResponse.json(decoded, { status: 200 });
+  } catch (error) {
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
-  
-
-  return NextResponse.json(decoded);
 }

@@ -1,42 +1,42 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
+export async function POST(req: Request,
+  { params }: { params: { uuid: string } }
 ) {
+  const { uuid } = params;
+
   try {
-    if (req.method === "GET") {
-      // Get all categories
-      const categories = await prisma.category.findMany({
-        include: {
-          Products: true, // Include related products
-        },
-      });
-      return res.status(200).json(categories);
+    const body = await req.json();
+    const {  quantity, productPackUnitUuid } = body;
+    console.log(body);
+    // Validate required fields
+    if (!uuid || !quantity || !productPackUnitUuid ) {
+      return NextResponse.json(
+        { error: "Missing required fields: productUuid, quantity, userUuid" },
+        { status: 400 }
+      );
     }
 
-    if (req.method === "POST") {
-      // Create a new category
-      const { name, description } = req.body;
-      const newCategory = await prisma.category.create({
-        data: {
-          name,
-          description,
-        },
-      });
-      return res.status(201).json(newCategory);
-    }
+    // Create stock received entry
+    const transaction = await prisma.stockReceived.create({
+      data: {
+        productUuid:uuid,
+        quantity,
+        productPackUnitUuid: productPackUnitUuid,
+      },
+    });
 
-    res.setHeader("Allow", ["GET", "POST"]);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+    return NextResponse.json(transaction, { status: 200 });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error creating stock received entry:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  } finally {
+    prisma.$disconnect();
   }
-  finally{
-      prisma.$disconnect();
-    }
 }

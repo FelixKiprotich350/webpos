@@ -34,14 +34,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { text } from "stream/consumers";
 import { NotificationProvider } from "./layoutComponents/notificationProvider";
-import Cookies from "js-cookie";
 import useAuthCheck from "./hooks/useAuthCheck";
+import useAuth from "./hooks/useAuthCheck";
 
 interface ProvidersProps {
   children: ReactNode; // Defines that the `children` prop can accept any valid React node
 }
 
 const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
+  // const isAuthenticated = useAuth();
+  // console.log(isAuthenticated);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSideNavExpanded, setIsSideNavExpanded] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,19 +53,19 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
     setIsSideNavExpanded((prev) => !prev);
   };
   // Fetch user details if the user is authenticated
-  const fetchUserDetails = async () => {
-    try {
-      const response = await fetch("/api/token"); // API endpoint to get user details
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data); // Store user details in state
-      } else {
-        setUser(null); // Reset user state if not authenticated
-      }
-    } catch (error) {
-      setError("Failed to fetch user details");
-    }
-  };
+  // const fetchUserDetails = async () => {
+  //   try {
+  //     const response = await fetch("/api/token"); // API endpoint to get user details
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       setUser(data); // Store user details in state
+  //     } else {
+  //       setUser(null); // Reset user state if not authenticated
+  //     }
+  //   } catch (error) {
+  //     setError("Failed to fetch user details");
+  //   }
+  // };
 
   // useAuthCheck();
   //logout function
@@ -96,7 +98,7 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
 
   // Fetch user details when the component mounts (or when logged-in state changes)
   useEffect(() => {
-    fetchUserDetails(); // Fetch user details
+    // fetchUserDetails(); // Fetch user details
   }, []);
   const handleMenuToggle = () => {
     setIsMenuOpen(!isMenuOpen);
