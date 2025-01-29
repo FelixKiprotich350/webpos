@@ -39,7 +39,7 @@ model TrtUser {
   uuid           String   @unique @default(uuid()) // UUID as a unique field
   username       String   @unique
   email          String   @unique
-  loginStatus    String   @default("ACTIVE")
+  loginStatus    String   @default("ENABLED")
   approvalStatus String   @default("PENDING")
   passwordHash   String
   createdAt      DateTime @default(now())
@@ -138,23 +138,23 @@ model Category {
 }
 
 model PackagingUnit {
-  id        Int       @id @default(autoincrement())
-  uuid      String    @unique @default(uuid()) // UUID as a unique field
-  name      String
-  countable Boolean
-  Products  Product[] // One-to-many relationship with Product
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id              Int               @id @default(autoincrement())
+  uuid            String            @unique @default(uuid()) // UUID as a unique field
+  name            String
+  countable       Boolean
+  Products        Product[] // One-to-many relationship with Product
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt 
 }
 
 model ProductPackUnit {
-  id           Int      @id @default(autoincrement())
-  uuid         String   @unique @default(uuid()) // UUID as a unique field
-  productUuid  String
-  unitFactor   Decimal
-  packUnitUuid String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              Int            @id @default(autoincrement())
+  uuid            String         @unique @default(uuid()) // UUID as a unique field
+  productUuid     String
+  unitFactor      Decimal
+  packUnitUuid    String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 ///sales modesls

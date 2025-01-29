@@ -34,7 +34,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { text } from "stream/consumers";
 import { NotificationProvider } from "./layoutComponents/notificationProvider";
-// import useAutoRefresh from "./hooks/useAutoRefresh";
+import Cookies from "js-cookie";
+import useAuthCheck from "./hooks/useAuthCheck";
 
 interface ProvidersProps {
   children: ReactNode; // Defines that the `children` prop can accept any valid React node
@@ -49,8 +50,6 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
   const toggleSideNav = () => {
     setIsSideNavExpanded((prev) => !prev);
   };
-  // useAutoRefresh();  // Call the auto-refresh hook here
-
   // Fetch user details if the user is authenticated
   const fetchUserDetails = async () => {
     try {
@@ -66,6 +65,7 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
     }
   };
 
+  // useAuthCheck();
   //logout function
   const logOutUser = async () => {
     try {
@@ -193,9 +193,9 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                   <Link href="/inventory/allproducts" passHref legacyBehavior>
                     <SideNavMenuItem>Products List</SideNavMenuItem>
                   </Link>
-                  {/* <Link href="/inventory/prices" passHref legacyBehavior>
-                  <SideNavMenuItem>Products Prices</SideNavMenuItem>
-                </Link> */}
+                  <Link href="/inventory/receive" passHref legacyBehavior>
+                    <SideNavMenuItem>Receive Stock</SideNavMenuItem>
+                  </Link>
                   <Link href="/inventory/packunits" passHref legacyBehavior>
                     <SideNavMenuItem>Packaging Units</SideNavMenuItem>
                   </Link>
@@ -204,9 +204,9 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                   </Link>
                 </SideNavMenu>
                 <SideNavMenu title="User Management">
-                  <Link href="/users/all" passHref legacyBehavior>
+                  <Link href="/users" passHref legacyBehavior>
                     <SideNavMenuItem>Users List</SideNavMenuItem>
-                  </Link> 
+                  </Link>
                   <Link href="/users/roles" passHref legacyBehavior>
                     <SideNavMenuItem>User Roles</SideNavMenuItem>
                   </Link>
@@ -233,14 +233,6 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                   </SideNavMenuItem>
                   <SideNavMenuItem href="/sources/api">
                     API Endpoint
-                  </SideNavMenuItem>
-                </SideNavMenu>
-                <SideNavMenu title="Administration">
-                  <SideNavMenuItem href="/sources/dataentry">
-                    System Setup
-                  </SideNavMenuItem>
-                  <SideNavMenuItem href="/administration/database">
-                    Database Manager
                   </SideNavMenuItem>
                 </SideNavMenu>
                 {/* <SideNavLink href="/datafetch"></SideNavLink> */}

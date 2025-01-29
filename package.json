@@ -4,9 +4,9 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --hostname 0.0.0.0",
     "lint": "next lint",
     "prepare": "husky"
   },
@@ -14,6 +14,7 @@
     "@carbon/icons-react": "^11.53.0",
     "@carbon/react": "^1.74.0",
     "@prisma/client": "^6.2.1",
+    "@types/js-cookie": "^3.0.6",
     "@types/lodash": "^4.17.14",
     "@types/node": "22.10.7",
     "@types/react": "^19.0.7",
@@ -25,6 +26,8 @@
     "cookie": "^1.0.2",
     "eslint": "^9.18.0",
     "eslint-plugin-next": "^0.0.0",
+    "jose": "^5.9.6",
+    "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "mysql2": "^3.12.0",

@@ -5,11 +5,20 @@ import { NextRequest, NextResponse } from "next/server";
 const prisma = new PrismaClient();
 
 // GET: Fetch all packaging units
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    // Get the query parameters from the request
+    const url = new URL(request.url);
+    const includeProducts = url.searchParams.get("includeproducts") === "true"; // Check if includeProducts is true
+
+    // Conditionally include Products based on the query parameter
     const units = await prisma.packagingUnit.findMany({
       orderBy: { createdAt: "desc" },
+      include: includeProducts
+        ? { Products: true } // Include Products if true
+        : {}, // Don't include Products if false
     });
+
     return NextResponse.json(units);
   } catch (error) {
     console.error("Error:", error);
@@ -23,7 +32,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json(); // Parse the JSON body explicitly
     const { name, countable } = body;
-    console.log(name, countable);
     if (!name || name.trim() === "") {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }

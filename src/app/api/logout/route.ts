@@ -18,14 +18,8 @@ interface LoginCredentials {
 
 export async function POST(request: Request) {
   const response = NextResponse.json({ message: 'Logout successful' });
-
-  // Clear the token cookie
-  response.cookies.set('authToken', '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: -1, // Expire the cookie immediately
-    path: '/',
-  });
+  response.cookies.delete('authToken'); // Remove the cookie
+ 
 
   return response;
 }

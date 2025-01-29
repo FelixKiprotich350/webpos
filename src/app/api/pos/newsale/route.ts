@@ -156,7 +156,6 @@ export async function POST(req: Request) {
           salesCode: mastercode,
         },
       });
-      console.log("Generated salesCode:", salesMaster.salesCode);
 
       // Save products to SalesItems
       await Promise.all(

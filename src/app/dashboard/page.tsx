@@ -15,6 +15,7 @@ import {
 import { PackagingUnit, Product } from "@prisma/client";
 import { Edit, Money, ShoppingCart, Box, User } from "@carbon/icons-react";
 import { useNotification } from "app/layoutComponents/notificationProvider";
+import useAuthCheck from "app/hooks/useAuthCheck";
 
 interface TopSellingProduct {
   id: number;
@@ -42,7 +43,7 @@ export default function Dashboard() {
     totalTransactions: 0,
     totalUsers: 0,
   });
-
+  useAuthCheck();
   // Fetch data from APIs
   useEffect(() => {
     const fetchStatistics = async () => {

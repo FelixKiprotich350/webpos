@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextInput,
   PasswordInput,
@@ -13,7 +13,7 @@ import {
   TabPanels,
   TabPanel,
 } from "@carbon/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginComponent() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -24,52 +24,51 @@ export default function LoginComponent() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<number>(0); // Track active tab (login or signup)
-  const router = useRouter();
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("reload") === "true") {
+      window.location.replace("/signing"); // Forces a full reload
+    }
+  }, [searchParams]);
+
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
-      setError("Both fields are required.");
+      setError("Both email and password are required.");
       return;
     }
 
-    setError(null); // Clear previous error
+    setError(null); // Clear errors
     setIsLoading(true);
 
-    const url = `${API_URL}/login`;
-    const method = "POST";
-
     try {
-      const response = await fetch(url, {
-        method,
+      const response = await fetch("/api/login", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
-
-      const data = await response.json();
       if (response.ok) {
-        sessionStorage.setItem("user", JSON.stringify(data));
+        // Redirect after login success
+        window.location.href = "/dashboard";
 
-        // Check if there's a redirect URL
-        const redirectUrl = new URL(window.location.href);
-        const targetUrl = redirectUrl.searchParams.get("redirect") || "/"; // Default to home page
-        window.location.href = targetUrl; // Redirect to the target URL
       } else {
-        setError(data.error || "Request failed.");
+        const errorData = await response.json();
+        setError(errorData.error || "Invalid email or password.");
       }
-    } catch (err) {
-      console.log(err);
-      setError((err as Error).message || "Request failed.");
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
+
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -110,7 +109,6 @@ export default function LoginComponent() {
         setError(data.error || "Request failed.");
       }
     } catch (err) {
-      console.log(err);
       setError((err as Error).message || "Request failed.");
     } finally {
       setIsLoading(false);

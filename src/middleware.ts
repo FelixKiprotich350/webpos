@@ -1,44 +1,27 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest } from "next/server";
+import jwt from "jsonwebtoken";
 
-const PUBLIC_ROUTES = [
-  "/api/signup",
-  "/api/login",
-  "/api/logout",
-  "/api/token",
-  "/signing",
-  "/initialsetup", 
-];
-
-const STATIC_ASSETS = ["/_next", "/favicon.ico"];
+const PUBLIC_PATHS = ["/signing", "/about", "/public"]; // Add public paths here
+const SECRET_KEY = process.env.JWT_SECRET!; // Replace with your secret
 
 export function middleware(request: NextRequest) {
-  const requestPath = request.nextUrl.pathname;
-  console.log(request.url);
-  // Allow static assets
-  if (STATIC_ASSETS.some((route) => requestPath.startsWith(route))) {
-    return NextResponse.next();
-  }
-
-  // Extract token from cookies
   const token = request.cookies.get("authToken")?.value;
 
-  // Check if the route is public
-  const isPublicRoute =
-    requestPath === "/" ||
-    PUBLIC_ROUTES.some((route) => requestPath.startsWith(route));
-
-  // Allow access to public routes or authenticated users
-  if (isPublicRoute || token) {
-    return NextResponse.next();
+  // If no token, redirect to sign-in page
+  if (token == "" || token == null || token == undefined) {
+    return NextResponse.redirect(new URL("/signing?reload=true", request.url), 303);
   }
-
-  // Redirect unauthenticated users
-  const redirectUrl = new URL("/signing", request.url);
-  redirectUrl.searchParams.set("redirect", requestPath);
-  return NextResponse.redirect(redirectUrl);
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/:path*"], // Ensure middleware matches API and other routes
+  matcher: [
+    "/dashboard",
+    "/pos/:path*",
+    "/settings/:path*",
+    "/reports/:path*",
+    "/users/:path*",
+    "/inventory/:path*",
+  ], // Match all routes except static files
 };

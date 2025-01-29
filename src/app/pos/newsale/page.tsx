@@ -73,7 +73,6 @@ export default function NewSalePage() {
   const [selectedGroupCode, setSelectedGroupCode] = useState<string>("");
 
   const handleHoldSaleSelection = (sale: string) => {
-    console.log(sale);
     setSelectedSale(sale); // Set the selected sale
   };
   // Fetch products from API
@@ -369,6 +368,7 @@ export default function NewSalePage() {
       setReference("");
     }
   };
+
   const { subtotal, totalTax, grandTotal } = calculateSummary();
   async function printReceiptUsb() {
     if (!("usb" in navigator)) {
@@ -382,6 +382,9 @@ export default function NewSalePage() {
     const device = await (navigator as any).usb.requestDevice({
       filters: [{ vendorId: 0x04b8 }], // Replace with your printer's vendorId
     });
+    console.log(device);
+    const interfaces = device.configuration.interfaces;
+
     await device.open();
     await device.selectConfiguration(1);
     await device.claimInterface(0);
@@ -400,7 +403,7 @@ export default function NewSalePage() {
     `;
 
     const command = encoder.encode(printData);
-    await device.transferOut(1, command); // Send data to the printer
+    await device.transferOut(2, command); // Send data to the printer
     await device.close();
   }
   const handlePrintTicket = (printtype: string) => {
@@ -529,6 +532,8 @@ export default function NewSalePage() {
           position: "relative",
         }}
       >
+        {/* <Button onClick={() => printReceiptUsb()}>Test print</Button> */}
+
         {/* Search and filter */}
         <div
           style={{
