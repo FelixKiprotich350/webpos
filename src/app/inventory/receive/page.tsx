@@ -68,11 +68,12 @@ export default function ProductPrices() {
     const payload = {
       productUuid: selectedProduct.uuid,
       quantity: parseFloat(quantity),
-      productPackUnitUuid: unit.uuid,
+      PackUnitUuid: unit.uuid,
+      
     };
 
     try {
-      const response = await fetch(`/api/inventory/products/${selectedProduct.uuid}`, {
+      const response = await fetch(`/api/inventory/receivestock`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

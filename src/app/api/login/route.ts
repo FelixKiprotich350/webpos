@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
 
     // Generate JWT token
     const token = jwt.sign({ id: user.uuid, email: user.email }, SECRET_KEY, {
-      expiresIn: "1m",
+      expiresIn: "5m",
     });
 
     // Set token in HTTP-only cookie

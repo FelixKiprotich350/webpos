@@ -3,29 +3,30 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function POST(req: Request,
-  { params }: { params: { uuid: string } }
-) {
-  const { uuid } = params;
-
+export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const {  quantity, productPackUnitUuid } = body;
+    const { productUuid, quantity, PackUnitUuid } = body;
     console.log(body);
     // Validate required fields
-    if (!uuid || !quantity || !productPackUnitUuid ) {
+    if (!productUuid || !quantity || !PackUnitUuid) {
       return NextResponse.json(
         { error: "Missing required fields: productUuid, quantity, userUuid" },
         { status: 400 }
       );
     }
 
+    //get product
+    const product = await prisma.product.findFirst({
+      where: { uuid: productUuid },
+    });
+
     // Create stock received entry
     const transaction = await prisma.stockReceived.create({
       data: {
-        productUuid:uuid,
+        product: { connect: { uuid: productUuid } },
         quantity,
-        productPackUnitUuid: productPackUnitUuid,
+        PackingUnit: { connect: { uuid: PackUnitUuid } },
       },
     });
 

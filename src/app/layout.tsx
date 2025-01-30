@@ -2,7 +2,7 @@ import "./globals.scss";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import ContentProviders from "./contentProvider";
-import { AuthProvider } from "./AuthContext";
+// import { AuthProvider } from "./AuthContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,13 +16,12 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <ContentProviders>{children}</ContentProviders>
-        </AuthProvider>
+        {/* <AuthProvider> */}
+        <ContentProviders>{children}</ContentProviders>
+        {/* </AuthProvider> */}
       </body>
     </html>
   );

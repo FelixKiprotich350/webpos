@@ -32,18 +32,13 @@ import {
 } from "@carbon/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { text } from "stream/consumers";
 import { NotificationProvider } from "./layoutComponents/notificationProvider";
-import useAuthCheck from "./hooks/useAuthCheck";
-import useAuth from "./hooks/useAuthCheck";
 
 interface ProvidersProps {
   children: ReactNode; // Defines that the `children` prop can accept any valid React node
 }
 
 const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
-  // const isAuthenticated = useAuth();
-  // console.log(isAuthenticated);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSideNavExpanded, setIsSideNavExpanded] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,21 +48,20 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
     setIsSideNavExpanded((prev) => !prev);
   };
   // Fetch user details if the user is authenticated
-  // const fetchUserDetails = async () => {
-  //   try {
-  //     const response = await fetch("/api/token"); // API endpoint to get user details
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       setUser(data); // Store user details in state
-  //     } else {
-  //       setUser(null); // Reset user state if not authenticated
-  //     }
-  //   } catch (error) {
-  //     setError("Failed to fetch user details");
-  //   }
-  // };
+  const fetchUserDetails = async () => {
+    try {
+      const response = await fetch("/api/token"); // API endpoint to get user details
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data); // Store user details in state
+      } else {
+        setUser(null); // Reset user state if not authenticated
+      }
+    } catch (error) {
+      setError("Failed to fetch user details");
+    }
+  };
 
-  // useAuthCheck();
   //logout function
   const logOutUser = async () => {
     try {
@@ -93,13 +87,13 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
 
   //login function
   const logInPage = () => {
-    router.push("/signing");
+    window.location.href = "/signing";
   };
 
   // Fetch user details when the component mounts (or when logged-in state changes)
   useEffect(() => {
-    // fetchUserDetails(); // Fetch user details
-  }, []);
+    fetchUserDetails(); // Fetch user details
+  }, [router]);
   const handleMenuToggle = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -214,21 +208,20 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                   </Link>
                 </SideNavMenu>
                 <SideNavMenu title="Reports">
-                  <Link href="/reports" legacyBehavior>
+                  <Link href="/reports/sales" legacyBehavior>
                     <SideNavMenuItem>Sales Reports</SideNavMenuItem>
                   </Link>
                   <Link href="/reports/products" legacyBehavior>
                     <SideNavMenuItem>Product Reports</SideNavMenuItem>
                   </Link>
-                  <Link href="/reports/system" legacyBehavior>
-                    <SideNavMenuItem>System Reports</SideNavMenuItem>
+                  <Link href="/reports/payments" legacyBehavior>
+                    <SideNavMenuItem>Payment Reports</SideNavMenuItem>
                   </Link>
-                  <Link href="/reports/users" legacyBehavior>
+                  {/* <Link href="/reports/users" legacyBehavior>
                     <SideNavMenuItem>User Reports</SideNavMenuItem>
-                  </Link>
+                  </Link> */}
                 </SideNavMenu>
-                <SideNavMenu title="Settings">
-                  {/* <SideNavMenuItem href="/sources/dataentry"></SideNavMenuItem> */}
+                {/* <SideNavMenu title="Settings">
                   <SideNavMenuItem href="/sources/csv">CSV</SideNavMenuItem>
                   <SideNavMenuItem href="/sources/database">
                     Database
@@ -236,7 +229,7 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                   <SideNavMenuItem href="/sources/api">
                     API Endpoint
                   </SideNavMenuItem>
-                </SideNavMenu>
+                </SideNavMenu> */}
                 {/* <SideNavLink href="/datafetch"></SideNavLink> */}
               </SideNavItems>
             </SideNav>

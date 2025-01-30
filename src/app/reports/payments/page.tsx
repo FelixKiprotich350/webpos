@@ -13,22 +13,19 @@ import {
   SelectItem,
   Button,
 } from "@carbon/react";
-import { Product, ProductSale } from "@prisma/client";
+import { SalesPayments } from "@prisma/client";
 
-interface ExtendedSale extends ProductSale {
-  InventoryProduct: Product;
-}
-export default function Reports() {
-  const [sales, setSales] = useState<ExtendedSale[]>([]);
+export default function Payments() {
+  const [payments, setPayments] = useState<SalesPayments[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/reports/sales");
+      const response = await fetch("/api/reports/payments");
       const data = await response.json();
 
-      setSales(data);
+      setPayments(data);
     } catch (error) {
       console.error("Error fetching stock data:", error);
     } finally {
@@ -43,22 +40,22 @@ export default function Reports() {
     <div>
       <h3>Sales Reports</h3>
 
-      <TableContainer title="Sales Reports as of ...">
+      <TableContainer title="Payments Reports as of ...">
         <Table>
           <TableHead>
             <TableRow>
               <TableHeader>ID</TableHeader>
-              <TableHeader>Name</TableHeader>
-              <TableHeader>Quantity</TableHeader>
+              <TableHeader>Mode</TableHeader>
+              <TableHeader>Amount</TableHeader>
               <TableHeader>Date</TableHeader>
             </TableRow>
           </TableHead>
           <TableBody>
-            {sales.map((item) => (
+            {payments.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>{item.id}</TableCell>
-                <TableCell>{item.InventoryProduct?.name}</TableCell>
-                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{item.paymentMode}</TableCell>
+                <TableCell>Ksh {Number(item.amountPaid).toFixed(2)}</TableCell>
                 <TableCell>{item.createdAt}</TableCell>
               </TableRow>
             ))}

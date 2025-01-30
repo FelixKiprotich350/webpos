@@ -95,16 +95,16 @@ model Supplier {
 }
 
 model StockReceived {
-  id                  Int             @id @default(autoincrement())
-  uuid                String          @unique @default(uuid()) // UUID as a unique field
-  productUuid         String
-  product             Product         @relation(fields: [productUuid], references: [uuid])
-  quantity            Decimal
-  receivedAt          DateTime        @default(now())
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  ProductPackUnit     ProductPackUnit @relation(fields: [productPackUnitUuid], references: [uuid])
-  productPackUnitUuid String
+  id           Int           @id @default(autoincrement())
+  uuid         String        @unique @default(uuid()) // UUID as a unique field
+  productUuid  String
+  product      Product       @relation(fields: [productUuid], references: [uuid])
+  quantity     Decimal
+  receivedAt   DateTime      @default(now())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  PackUnitUuid String
+  PackingUnit  PackagingUnit @relation(fields: [PackUnitUuid], references: [uuid])
 }
 
 model Product {
@@ -136,24 +136,24 @@ model Category {
 }
 
 model PackagingUnit {
-  id        Int       @id @default(autoincrement())
-  uuid      String    @unique @default(uuid()) // UUID as a unique field
-  name      String
-  countable Boolean
-  Products  Product[] // One-to-many relationship with Product
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-model ProductPackUnit {
   id            Int             @id @default(autoincrement())
   uuid          String          @unique @default(uuid()) // UUID as a unique field
-  productUuid   String
-  unitFactor    Decimal
-  packUnitUuid  String
+  name          String
+  countable     Boolean
+  Products      Product[] // One-to-many relationship with Product
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   StockReceived StockReceived[]
+}
+
+model ProductPackUnit {
+  id           Int      @id @default(autoincrement())
+  uuid         String   @unique @default(uuid()) // UUID as a unique field
+  productUuid  String
+  unitFactor   Decimal
+  packUnitUuid String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 ///sales modesls
