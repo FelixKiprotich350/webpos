@@ -301,7 +301,19 @@ export default function NewSalePage() {
     );
     setTicketPayments(updatedPayments);
   };
-
+  //remove sale item
+  const handleRemoveSaleItem = () => {
+    if (formData?.uuid) {
+      setItems((prevItems) =>
+        prevItems.filter((item) => item.uuid !== formData.uuid)
+      );
+      setShowModal(false); // Close the modal
+      setFormData({});
+    }
+  };
+  const handleChange = (qty: any) => {
+    setFormData((prev) => ({ ...prev, quantity: Number(qty) }));
+  };
   const handleHoldItems = async () => {
     try {
       if (holdDescription == "" || items.length <= 0) {
@@ -635,6 +647,7 @@ export default function NewSalePage() {
         {showModal && (
           <Modal
             open={showModal}
+            onClose={setFormData({})}
             modalHeading={"Edit Item"}
             primaryButtonText={"Accept Changes"}
             secondaryButtonText="Cancel"
@@ -653,6 +666,7 @@ export default function NewSalePage() {
               );
               setItems(updatedItems); // Update the state with the modified array
               setShowModal(false); // Close the modal
+              setFormData({});
             }}
           >
             <div>
@@ -664,12 +678,13 @@ export default function NewSalePage() {
                 label="Selling Quantity"
                 max={100}
                 min={1}
-                onChange={() => {}}
+                onChange={(e: any) => handleChange(e.target.value)}
                 size="md"
                 step={1}
                 value={formData?.quantity || 1}
                 warnText="This is the quantity to sell."
               />
+              <Button onClick={handleRemoveSaleItem}>Remove Item</Button>
             </div>
           </Modal>
         )}

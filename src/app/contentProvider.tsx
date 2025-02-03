@@ -33,16 +33,19 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { NotificationProvider } from "./layoutComponents/notificationProvider";
+import { Role, TrtUser } from "@prisma/client";
 
 interface ProvidersProps {
   children: ReactNode; // Defines that the `children` prop can accept any valid React node
 }
-
+interface ExtendedUser extends TrtUser {
+  Role?: Role;
+}
 const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSideNavExpanded, setIsSideNavExpanded] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<ExtendedUser | null>(null);
   const router = useRouter();
   const toggleSideNav = () => {
     setIsSideNavExpanded((prev) => !prev);
@@ -174,62 +177,62 @@ const ContentProviders: React.FC<ProvidersProps> = ({ children }) => {
                 <Link href="/dashboard" passHref legacyBehavior>
                   <SideNavLink>Dashboard</SideNavLink>
                 </Link>
-                <SideNavMenu title="Point of Sale">
-                  <Link href="/pos/newsale" passHref legacyBehavior>
-                    <SideNavMenuItem>New Sale</SideNavMenuItem>
-                  </Link>
-                  <Link href="/pos/tickets" passHref legacyBehavior>
-                    <SideNavMenuItem>Tickets on Hold</SideNavMenuItem>
-                  </Link>
-                  <Link href="/pos/today" passHref legacyBehavior>
-                    <SideNavMenuItem>Today's Sales</SideNavMenuItem>
-                  </Link>
-                </SideNavMenu>
-                <SideNavMenu title="Inventory">
-                  <Link href="/inventory/allproducts" passHref legacyBehavior>
-                    <SideNavMenuItem>Products List</SideNavMenuItem>
-                  </Link>
-                  <Link href="/inventory/receive" passHref legacyBehavior>
-                    <SideNavMenuItem>Receive Stock</SideNavMenuItem>
-                  </Link>
-                  <Link href="/inventory/packunits" passHref legacyBehavior>
-                    <SideNavMenuItem>Packaging Units</SideNavMenuItem>
-                  </Link>
-                  <Link href="/inventory/categories" passHref legacyBehavior>
-                    <SideNavMenuItem>Categories</SideNavMenuItem>
-                  </Link>
-                </SideNavMenu>
-                <SideNavMenu title="User Management">
-                  <Link href="/users" passHref legacyBehavior>
-                    <SideNavMenuItem>Users List</SideNavMenuItem>
-                  </Link>
-                  <Link href="/users/roles" passHref legacyBehavior>
-                    <SideNavMenuItem>User Roles</SideNavMenuItem>
-                  </Link>
-                </SideNavMenu>
-                <SideNavMenu title="Reports">
-                  <Link href="/reports/sales" legacyBehavior>
-                    <SideNavMenuItem>Sales Reports</SideNavMenuItem>
-                  </Link>
-                  <Link href="/reports/products" legacyBehavior>
-                    <SideNavMenuItem>Product Reports</SideNavMenuItem>
-                  </Link>
-                  <Link href="/reports/payments" legacyBehavior>
-                    <SideNavMenuItem>Payment Reports</SideNavMenuItem>
-                  </Link>
-                  {/* <Link href="/reports/users" legacyBehavior>
+                {user.Role?.name == "Cashier" && (
+                  <SideNavMenu title="Point of Sale">
+                    <Link href="/pos/newsale" passHref legacyBehavior>
+                      <SideNavMenuItem>New Sale</SideNavMenuItem>
+                    </Link>
+                    <Link href="/pos/tickets" passHref legacyBehavior>
+                      <SideNavMenuItem>Tickets on Hold</SideNavMenuItem>
+                    </Link>
+                    <Link href="/pos/today" passHref legacyBehavior>
+                      <SideNavMenuItem>Today's Sales</SideNavMenuItem>
+                    </Link>
+                  </SideNavMenu>
+                )}
+                {user.Role?.name == "StockManager" && (
+                  <SideNavMenu title="Inventory">
+                    <Link href="/inventory/allproducts" passHref legacyBehavior>
+                      <SideNavMenuItem>Products List</SideNavMenuItem>
+                    </Link>
+                    <Link href="/inventory/receive" passHref legacyBehavior>
+                      <SideNavMenuItem>Receive Stock</SideNavMenuItem>
+                    </Link>
+                    <Link href="/inventory/packunits" passHref legacyBehavior>
+                      <SideNavMenuItem>Packaging Units</SideNavMenuItem>
+                    </Link>
+                    <Link href="/inventory/categories" passHref legacyBehavior>
+                      <SideNavMenuItem>Categories</SideNavMenuItem>
+                    </Link>
+                  </SideNavMenu>
+                )}
+
+                {user.Role?.name == "Admin" && (
+                  <SideNavMenu title="User Management">
+                    <Link href="/users" passHref legacyBehavior>
+                      <SideNavMenuItem>Users List</SideNavMenuItem>
+                    </Link>
+                    <Link href="/users/roles" passHref legacyBehavior>
+                      <SideNavMenuItem>User Roles</SideNavMenuItem>
+                    </Link>
+                  </SideNavMenu>
+                )}
+                {user.Role?.name == "Admin" && (
+                  <SideNavMenu title="Reports">
+                    <Link href="/reports/sales" legacyBehavior>
+                      <SideNavMenuItem>Sales Reports</SideNavMenuItem>
+                    </Link>
+                    <Link href="/reports/products" legacyBehavior>
+                      <SideNavMenuItem>Product Reports</SideNavMenuItem>
+                    </Link>
+                    <Link href="/reports/payments" legacyBehavior>
+                      <SideNavMenuItem>Payment Reports</SideNavMenuItem>
+                    </Link>
+                    {/* <Link href="/reports/users" legacyBehavior>
                     <SideNavMenuItem>User Reports</SideNavMenuItem>
                   </Link> */}
-                </SideNavMenu>
-                {/* <SideNavMenu title="Settings">
-                  <SideNavMenuItem href="/sources/csv">CSV</SideNavMenuItem>
-                  <SideNavMenuItem href="/sources/database">
-                    Database
-                  </SideNavMenuItem>
-                  <SideNavMenuItem href="/sources/api">
-                    API Endpoint
-                  </SideNavMenuItem>
-                </SideNavMenu> */}
+                  </SideNavMenu>
+                )}
                 {/* <SideNavLink href="/datafetch"></SideNavLink> */}
               </SideNavItems>
             </SideNav>
